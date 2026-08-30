@@ -23,7 +23,7 @@ type FixtureContextValue = {
   alreadyRechargedThisMonth: boolean
   uploadError: string
   selectCase: (caseId: string | null) => void
-  loadFixture: (file: File | undefined) => Promise<void>
+  loadFixture: (file: File | undefined) => Promise<{ ok: boolean; error?: string }>
   resetFixture: () => void
   clearUploadError: () => void
 }
@@ -62,14 +62,17 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
 
   const loadFixture = async (file: File | undefined) => {
-    if (!file) return
+    if (!file) return { ok: false, error: "Choose a JSON fixture." }
     try {
       const next = validateFixture(JSON.parse(await file.text()))
       setFixture(next)
       setCaseId(next.cases[0].case_id)
       setUploadError("")
+      return { ok: true }
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "The fixture could not be loaded.")
+      const message = error instanceof Error ? error.message : "The fixture could not be loaded."
+      setUploadError(message)
+      return { ok: false, error: message }
     }
   }
 

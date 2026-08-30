@@ -52,6 +52,8 @@
 }
 
 :root {
+  --shell-header-height: 3.5rem;
+  --shell-divider-color: var(--border);
   --background: oklch(0.975 0.006 180);
   --foreground: oklch(0.23 0.035 195);
   --card: oklch(0.995 0.003 180);

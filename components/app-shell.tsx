@@ -1,20 +1,19 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { useRef } from "react"
-import { BarChart3, Calculator, CircleGauge, LayoutDashboard, RefreshCcw, Table2, Upload } from "lucide-react"
+import { BarChart3, Calculator, LayoutDashboard, RefreshCcw, Table2 } from "lucide-react"
 
+import { FixtureUpload } from "@/components/fixture-upload"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useFixture } from "@/components/fixture-provider"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -44,16 +43,15 @@ const pageTitles: Record<string, string> = {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { fixture, caseId, selectCase, loadFixture, resetFixture, uploadError, clearUploadError } = useFixture()
-  const fileInput = useRef<HTMLInputElement>(null)
+  const { fixture, caseId, selectCase, resetFixture, uploadError, clearUploadError } = useFixture()
 
   return (
     <SidebarProvider>
       <a href="#main-content" className="sr-only fixed left-3 top-3 z-50 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground focus:not-sr-only">Skip to content</a>
       <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader className="border-b border-sidebar-border p-3">
+        <SidebarHeader className="h-[var(--shell-header-height)] shrink-0 border-b border-[var(--shell-divider-color)] p-3">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"><CircleGauge className="size-4" /></div>
+            <Image src="/brand-mark.png" alt="" width={32} height={32} priority className="size-8 shrink-0 object-contain" />
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <p className="truncate text-sm font-semibold">Meterwise</p>
               <p className="truncate font-mono text-[10px] text-muted-foreground">LSH26-T031 · P10</p>
@@ -67,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenu>
                 {navigation.map((item) => (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton tooltip={item.label} isActive={pathname === item.href} render={<Link href={item.href} />}>
+                    <SidebarMenuButton tooltip={item.label} isActive={pathname === item.href} render={<Link href={item.href} prefetch />}>
                       <item.icon />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
@@ -77,28 +75,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter className="border-t border-sidebar-border p-3">
-          <div className="font-mono text-[10px] leading-4 text-muted-foreground group-data-[collapsible=icon]:hidden">
-            Integer-poisha engine<br />25 published cases
-          </div>
-        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex min-h-14 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-30 flex h-[var(--shell-header-height)] shrink-0 items-center gap-2 border-b border-[var(--shell-divider-color)] bg-background/95 px-3 backdrop-blur sm:px-5">
           <SidebarTrigger />
           <div className="h-5 w-px bg-border" />
-          <h1 className="mr-auto text-sm font-semibold">{pageTitles[pathname] ?? "Meterwise"}</h1>
+          <span className="mr-auto text-sm font-semibold">{pageTitles[pathname] ?? "Meterwise"}</span>
           <div className="hidden items-center gap-2 sm:flex">
             <Select value={caseId} onValueChange={selectCase}>
               <SelectTrigger size="sm" className="w-28 font-mono" aria-label="Fixture case"><SelectValue /></SelectTrigger>
               <SelectContent>{fixture.cases.map((item) => <SelectItem key={item.case_id} value={item.case_id}>{item.case_id}</SelectItem>)}</SelectContent>
             </Select>
-            <Input ref={fileInput} type="file" accept="application/json,.json" className="hidden" onChange={async (event) => { await loadFixture(event.target.files?.[0]); event.target.value = "" }} aria-label="Upload P10 fixture" />
-            <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}><Upload /> <span className="hidden lg:inline">Load JSON</span></Button>
             <Button variant="ghost" size="icon-sm" title="Reset published fixture" aria-label="Reset published fixture" onClick={resetFixture}><RefreshCcw /></Button>
           </div>
+          <FixtureUpload />
           <ThemeToggle />
         </header>
 
@@ -107,8 +99,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SelectTrigger size="sm" className="min-w-0 flex-1 font-mono" aria-label="Fixture case"><SelectValue /></SelectTrigger>
             <SelectContent>{fixture.cases.map((item) => <SelectItem key={item.case_id} value={item.case_id}>{item.case_id}</SelectItem>)}</SelectContent>
           </Select>
-          <Input ref={fileInput} type="file" accept="application/json,.json" className="hidden" onChange={async (event) => { await loadFixture(event.target.files?.[0]); event.target.value = "" }} aria-label="Upload P10 fixture" />
-          <Button variant="outline" size="icon-sm" aria-label="Load JSON" onClick={() => fileInput.current?.click()}><Upload /></Button>
           <Button variant="ghost" size="icon-sm" aria-label="Reset published fixture" onClick={resetFixture}><RefreshCcw /></Button>
         </div>
 
