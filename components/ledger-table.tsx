@@ -12,7 +12,7 @@ import {
   tableFeatures,
   useTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Download, Search } from "lucide-react"
 
 import { useFixture } from "@/components/fixture-provider"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { downloadTextFile } from "@/lib/download"
+import { ledgerCsv } from "@/src/domain/export"
 import { formatBdt } from "@/src/domain/money"
 import type { DailyLedgerRow } from "@/src/domain/types"
 
@@ -67,15 +69,23 @@ export function LedgerTable() {
           </div>
           <p className="mt-1 text-sm text-muted-foreground">Every reading, charge and recharge in meter order.</p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <Search aria-hidden="true" className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            aria-label="Filter ledger rows"
-            className="pl-8"
-            placeholder="Filter by date or value"
-            value={(table.state.globalFilter as string) ?? ""}
-            onChange={(event) => table.setGlobalFilter(event.target.value)}
-          />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="relative w-full sm:w-72">
+            <Search aria-hidden="true" className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              aria-label="Filter ledger rows"
+              className="pl-8"
+              placeholder="Filter by date or value"
+              value={(table.state.globalFilter as string) ?? ""}
+              onChange={(event) => table.setGlobalFilter(event.target.value)}
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => downloadTextFile(`${activeCase.case_id}-daily-ledger.csv`, ledgerCsv(activeCase.case_id, ledger))}
+          >
+            <Download aria-hidden="true" /> Export full CSV
+          </Button>
         </div>
       </div>
 

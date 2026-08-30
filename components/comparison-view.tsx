@@ -1,14 +1,17 @@
 "use client"
 
-import { CheckCircle2, Equal, TriangleAlert } from "lucide-react"
+import { CheckCircle2, Download, Equal, TriangleAlert } from "lucide-react"
 
 import { ComparisonCostChart } from "@/components/analysis-charts"
 import { useFixture } from "@/components/fixture-provider"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { downloadTextFile } from "@/lib/download"
 import { prettyMonth } from "@/src/domain/dates"
+import { comparisonCsv } from "@/src/domain/export"
 import { formatBdt } from "@/src/domain/money"
 import type { CostTotals } from "@/src/domain/types"
 
@@ -25,7 +28,19 @@ export function ComparisonView() {
           <h1 className="text-xl font-semibold tracking-tight">Recharge habit comparison</h1>
           <p className="mt-1 text-sm text-muted-foreground">Same consumption and calendar-month slab counter.</p>
         </div>
-        <Badge variant="outline" className="font-mono text-[10px]">{comparison.days} daily readings</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-mono text-[10px]">{comparison.days} daily readings</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => downloadTextFile(
+              `${activeCase.case_id}-habit-comparison.csv`,
+              comparisonCsv({ caseId: activeCase.case_id, months: activeCase.comparison.months, ...comparison }),
+            )}
+          >
+            <Download aria-hidden="true" /> Export CSV
+          </Button>
+        </div>
       </div>
 
       <Alert className={comparison.invariant ? "border-teal-500/30 bg-teal-500/5" : undefined} variant={comparison.invariant ? "default" : "destructive"}>
