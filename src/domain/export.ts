@@ -29,22 +29,27 @@ export function ledgerCsv(caseId: string, rows: DailyLedgerRow[]) {
     "closing_balance_bdt",
   ])
 
-  const body = rows.map((row) => csvRow([
-    caseId,
-    row.date,
-    bdtValue(row.openingBalancePoisha),
-    row.units,
-    row.monthlyUnitsBefore,
-    row.monthlyUnitsAfter,
-    row.slabAllocations
-      .map((part) => `${part.label}: ${part.units} units at ${bdtValue(part.ratePoisha)} BDT = ${bdtValue(part.costPoisha)} BDT`)
-      .join("; "),
-    bdtValue(row.rechargePoisha),
-    bdtValue(row.fixedChargesPoisha),
-    bdtValue(row.energyCostPoisha),
-    bdtValue(row.vatPoisha),
-    bdtValue(row.closingBalancePoisha),
-  ]))
+  const body = rows.map((row) =>
+    csvRow([
+      caseId,
+      row.date,
+      bdtValue(row.openingBalancePoisha),
+      row.units,
+      row.monthlyUnitsBefore,
+      row.monthlyUnitsAfter,
+      row.slabAllocations
+        .map(
+          (part) =>
+            `${part.label}: ${part.units} units at ${bdtValue(part.ratePoisha)} BDT = ${bdtValue(part.costPoisha)} BDT`
+        )
+        .join("; "),
+      bdtValue(row.rechargePoisha),
+      bdtValue(row.fixedChargesPoisha),
+      bdtValue(row.energyCostPoisha),
+      bdtValue(row.vatPoisha),
+      bdtValue(row.closingBalancePoisha),
+    ])
+  )
 
   return [header, ...body].join("\r\n") + "\r\n"
 }
@@ -75,25 +80,34 @@ export function comparisonCsv(input: ComparisonCsvInput) {
     "cheaper_habit",
     "cost_difference_bdt",
   ])
-  const shared = [
-    input.caseId,
-    input.months.join(" | "),
-  ]
-  const result = input.cheaper === "equal" ? "equal" : input.cheaper === "low" ? "low balance" : "monthly"
-  const policyRow = (habit: string, values: CostTotals) => csvRow([
-    ...shared,
-    habit,
-    bdtValue(values.energyPoisha),
-    bdtValue(values.vatPoisha),
-    bdtValue(values.fixedPoisha),
-    bdtValue(values.costPoisha),
-    bdtValue(values.depositsPoisha),
-    bdtValue(values.endingBalancePoisha),
-    values.rechargeCount,
-    input.invariant ? "pass" : "fail",
-    result,
-    bdtValue(input.differencePoisha),
-  ])
+  const shared = [input.caseId, input.months.join(" | ")]
+  const result =
+    input.cheaper === "equal"
+      ? "equal"
+      : input.cheaper === "low"
+        ? "low balance"
+        : "monthly"
+  const policyRow = (habit: string, values: CostTotals) =>
+    csvRow([
+      ...shared,
+      habit,
+      bdtValue(values.energyPoisha),
+      bdtValue(values.vatPoisha),
+      bdtValue(values.fixedPoisha),
+      bdtValue(values.costPoisha),
+      bdtValue(values.depositsPoisha),
+      bdtValue(values.endingBalancePoisha),
+      values.rechargeCount,
+      input.invariant ? "pass" : "fail",
+      result,
+      bdtValue(input.differencePoisha),
+    ])
 
-  return [header, policyRow("low balance", input.lowBalance), policyRow("monthly", input.monthly)].join("\r\n") + "\r\n"
+  return (
+    [
+      header,
+      policyRow("low balance", input.lowBalance),
+      policyRow("monthly", input.monthly),
+    ].join("\r\n") + "\r\n"
+  )
 }

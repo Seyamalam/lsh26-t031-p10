@@ -1,20 +1,19 @@
-# Meterwise — exactly 60-second demo
+# Meterwise 60-second demo
 
-Record the live application at <https://lsh26-t031-p10.vercel.app> in a 16:9 browser window. Keep the case selector on `PUB-01` at the start.
+Record <https://lsh26-t031-p10.vercel.app> in a 16:9 browser window. Start with case `PUB-01`.
 
-| Time | Screen action | Narration |
-| --- | --- | --- |
-| 0:00–0:06 | Open **Dashboard**. Point to closing balance and run-out date. | “Meterwise reconstructs a prepaid meter balance and answers when to recharge and how much.” |
-| 0:06–0:15 | Point to the balance recharge marker, monthly bars, then switch the case once. | “All 25 official cases include six months of readings, light and heavy months, and late large recharges.” |
-| 0:15–0:27 | Open **Daily ledger**, filter a date, sort **Closing**, and point to a highlighted recharge row. | “Every day exposes opening balance, units, calendar-month total, recharge, first monthly fixed charge, energy, VAT and close.” |
-| 0:27–0:40 | Open **Recharge advisor**, change **Last through**, and point down the breakdown. | “The advisor projects the run-out date and reconciles the required deposit into baseline energy, higher-slab increment, VAT, fixed charges and balance credit.” |
-| 0:40–0:54 | Open **Habit comparison**. Point to the invariant alert, bars, consumed costs and deposits. | “Both habits use identical consumption and slab counters. Energy and VAT match exactly; only applicable monthly fixed charges may change cost. Deposits stay separate.” |
-| 0:54–1:00 | Toggle dark theme; end on the invariant result. | “The app is responsive, fixture-upload ready, and verified by 39 automated tests across every official case.” |
+| Time      | Action                                                                                 | Narration                                                                                                                                               |
+| --------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00-0:07 | Open Dashboard and point to the judge shortcuts.                                       | "These shortcuts take a judge straight to the light month, heavy summer month, late recharge and each tariff answer."                                   |
+| 0:07-0:17 | Point to the balance and monthly charts.                                               | "The public case has 181 daily readings across six months. Recharge markers sit on the rebuilt balance."                                                |
+| 0:17-0:29 | Open Daily ledger. Point to the BDT 82 fixed-charge proof, slab column and CSV button. | "Each row follows meter order and shows the slab allocation, recharge, first monthly fixed charge, energy, VAT and closing balance."                    |
+| 0:29-0:42 | Open Recharge advisor. Change Last through and trace the breakdown.                    | "The advisor answers the run-out date and reconciles today's deposit into base energy, the higher-slab amount, VAT, fixed charges and current balance." |
+| 0:42-0:55 | Open Habit comparison. Point to the invariant, decision and export.                    | "Both habits use the same consumption and slab counter. Energy and VAT match exactly, so any cost difference can only be fixed charges."                |
+| 0:55-1:00 | Toggle the theme and return to the invariant.                                          | "The four routes are responsive and the calculation suite passes 42 tests across all 25 public cases."                                                  |
 
 ## Recording checklist
 
-- Start at 0:00 and end at 1:00; do not exceed 60 seconds.
-- Use the deployed URL, not localhost.
-- Keep browser zoom at 100% and pointer movement deliberate.
-- Show the invariant alert long enough to read.
-- Confirm the final video contains no notifications, personal data or credentials.
+- Finish at 1:00. Do not run over 60 seconds.
+- Record the deployed URL at 100 percent browser zoom.
+- Keep pointer movement deliberate and leave the invariant on screen long enough to read.
+- Make sure no notification, personal data or credential appears in the recording.

@@ -1,56 +1,94 @@
 # Meterwise
 
-A solution for **LofiStack Hackathon 2026 — P10: Prepaid Meter Recharge Advisor**.
+Meterwise is the LSH26-T031 entry for P10, Prepaid Meter Recharge Advisor.
 
-## Project information
+- Team ID: `LSH26-T031`
+- Problem: `P10`
+- Repository: <https://github.com/Seyamalam/lsh26-t031-p10>
+- Live app: <https://lsh26-t031-p10.vercel.app>
+- Demo plan: [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md)
 
-- **Team ID:** `LSH26-T031`
-- **Problem:** `P10 — Prepaid Meter Recharge Advisor`
-- **Repository:** <https://github.com/Seyamalam/lsh26-t031-p10>
-- **Live application:** <https://lsh26-t031-p10.vercel.app>
-- **60-second demo plan:** [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md)
+Judges should evaluate the exact 40-character commit SHA entered in the final submission form.
 
-> Judges should evaluate only the exact 40-character commit SHA entered in the Final Submission Form.
+## What the app does
 
-## Solution summary
-
-Meterwise reconstructs a household's prepaid meter balance one day at a time, keeping every recharge, fixed charge, slab allocation, energy cost and VAT amount inspectable. It forecasts the first non-positive balance date, calculates the recharge needed for a chosen target date, and compares two recharge habits while enforcing the clarification that recharge timing cannot create an energy-rate saving.
+Meterwise rebuilds a household meter balance one day at a time. Every recharge, fixed charge, slab allocation, energy cost and VAT amount remains visible in the ledger. The advisor answers when the current balance will run out and how much to deposit for a chosen target date. The comparison route runs both required recharge habits against the same consumption and calendar-month slab counter.
 
 ## Requirement proof
 
-| Requirement | Status | Where to verify |
-| --- | --- | --- |
-| R1 — At least six months of readings and recharge history, including light/heavy/late-recharge months | Complete | `/dashboard` shows monthly consumption plus the light, heavy and late-recharge checks. `public/data/P10_prepaid_meter_public.json` contains all 25 published cases. |
-| R2 — Rebuild balance daily with progressive slabs, first-recharge fixed charges, VAT, chart and markers | Complete | `/dashboard` contains the balance chart and recharge markers; `/ledger` provides searchable, sortable, paginated daily values. Pure engine: `src/domain/ledger.ts`; tests: `src/domain/ledger.test.ts` and `src/domain/tariff.test.ts`. |
-| R3 — Forecast run-out and calculate the recharge required through a target date with breakdown | Complete | `/advisor` shows the run-out date and reconciled baseline energy, higher-slab increment, VAT, fixed charges, balance credit and required deposit. Engine/tests: `src/domain/advice.ts` and `src/domain/advice.test.ts`. |
-| R4 — Compare low-balance and monthly habits on identical consumption | Complete | `/comparison` shows both policies, component costs, deposits, balances and the strict energy/VAT invariant. Engine: `src/domain/comparison.ts`; all 25 cases are checked in `src/data/fixture.test.ts`. |
+| Item                                                                                                 | Route                                                                                                                                    | Screenshot                                                            | Test                                                                                  | Source                                                                                                          |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1. Six months of readings, recharge history, light month, heavy summer month and late large recharge | [`/dashboard`](https://lsh26-t031-p10.vercel.app/dashboard#history-checks)                                                               | [`meterwise-overview.png`](public/screenshots/meterwise-overview.png) | `src/data/fixture.test.ts`                                                            | `public/data/P10_prepaid_meter_public.json`, `src/domain/summary.ts`                                            |
+| 2. Daily balance, slab charging, monthly fixed charges, VAT, balance chart and recharge markers      | [`/dashboard`](https://lsh26-t031-p10.vercel.app/dashboard), [`/ledger`](https://lsh26-t031-p10.vercel.app/ledger#fixed-charge-evidence) | [`daily-ledger.png`](public/screenshots/daily-ledger.png)             | `src/domain/ledger.test.ts`, `src/domain/tariff.test.ts`, `src/domain/export.test.ts` | `src/domain/ledger.ts`, `src/domain/tariff.ts`, `components/analysis-charts.tsx`, `components/ledger-table.tsx` |
+| 3. Run-out date and target-date deposit with energy, higher-slab, fixed charge and VAT breakdown     | [`/advisor`](https://lsh26-t031-p10.vercel.app/advisor#deposit-breakdown)                                                                | [`recharge-advisor.png`](public/screenshots/recharge-advisor.png)     | `src/domain/advice.test.ts`                                                           | `src/domain/advice.ts`, `components/advisor-view.tsx`                                                           |
+| 4. Three-month comparison with identical consumption and no fabricated slab saving                   | [`/comparison`](https://lsh26-t031-p10.vercel.app/comparison#habit-invariant)                                                            | [`habit-comparison.png`](public/screenshots/habit-comparison.png)     | `src/data/fixture.test.ts`, `src/domain/export.test.ts`                               | `src/domain/comparison.ts`, `components/comparison-view.tsx`                                                    |
+
+The dashboard starts with seven judge shortcuts. Each one links to the exact light month, heavy summer month, late recharge, first fixed charge, run-out answer, deposit breakdown or energy and VAT invariant.
+
+## Screenshots
+
+| Dashboard and judge shortcuts                                                                                         | Daily ledger and CSV export                                                                               |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| ![Dashboard with judge shortcuts, monthly consumption and balance history](public/screenshots/meterwise-overview.png) | ![Daily meter ledger with fixed-charge evidence and slab allocation](public/screenshots/daily-ledger.png) |
+| Recharge advisor                                                                                                      | Habit comparison                                                                                          |
+| ![Recharge advisor with run-out date and deposit breakdown](public/screenshots/recharge-advisor.png)                  | ![Habit comparison with exact energy and VAT invariant](public/screenshots/habit-comparison.png)          |
+
+## Calculation flow
+
+```mermaid
+flowchart LR
+  J[Bundled or imported JSON] --> V[validateFixture]
+  V --> L[runDailyLedger]
+  L --> O[Opening balance]
+  O --> R[Start-of-day recharge]
+  R --> F[First monthly fixed charges]
+  F --> S[Calendar-month slab allocation]
+  S --> E[Energy plus VAT]
+  E --> C[Closing balance]
+  C --> D[Dashboard and ledger]
+  C --> A[Run-out and deposit advice]
+  V --> H[Three-month habit comparison]
+  H --> I[Energy and VAT equality check]
+```
+
+The engine stores money as integer poisha. A day that crosses a slab boundary is split across each applicable slab. Recharging does not reset the monthly unit counter.
 
 ## Judge walkthrough
 
-1. Open `/dashboard`, change the selected case, and verify that the metrics, balance chart, monthly chart and history checks update together.
-2. Open `/ledger`, filter by a date, sort a value column and inspect a teal recharge row with its fixed charge.
-3. Open `/advisor`, change **Last through**, and reconcile the required deposit against the visible breakdown.
-4. Open `/comparison` and confirm the invariant states that energy and VAT match exactly; compare consumed cost separately from deposits.
-5. Use **Load JSON** to upload `public/data/P10_prepaid_meter_public.json`. Use reset to restore all published cases. Invalid input produces a visible error.
+1. Open `/dashboard`. Use the judge shortcuts to inspect the three required history cases.
+2. Open `/ledger#fixed-charge-evidence`. The first charged recharge shows BDT 42 demand charge plus BDT 40 meter rent. Sort or filter the table, then use `Export full CSV` to download every ledger row.
+3. Open `/advisor`. Change `Last through` and reconcile the deposit against the visible energy, higher-slab, VAT, fixed charge and balance-credit lines.
+4. Open `/comparison`. Confirm that energy and VAT match exactly. The screen keeps consumed cost separate from deposits. `Export CSV` downloads both policy summaries.
+5. Use `Load JSON` to try an import, then use reset to restore the 25 bundled cases.
+
+## Importing JSON
+
+Imports are parsed in the browser and are never sent to a server.
+
+1. Click `Load JSON` in the header.
+2. Choose [`public/data/P10_import_example.json`](public/data/P10_import_example.json) to check the accepted shape.
+3. The selected case and every route update from the imported data.
+4. Click the reset button to return to [`public/data/P10_prepaid_meter_public.json`](public/data/P10_prepaid_meter_public.json), which contains the full 25-case judging fixture.
+
+Each document needs `schema_version`, `problem_id: "P10"` and a non-empty `cases` array. Each case needs an ID, opening balance, ascending whole-unit readings, recharge history, `today`, usual daily use, target date and a comparison object naming exactly three months. Invalid files produce a visible error and do not replace the current data.
+
+The small import example demonstrates the file shape. It is not a replacement for the full six-month public fixture used for requirement proof.
 
 ## Calculation decisions
 
-- Money is held as integer poisha. No ledger calculation uses binary floating-point BDT values.
-- Daily readings are whole units. A day crossing a boundary is split across every applicable slab.
-- Same-day ordering is: opening balance, start-of-day recharge, first-recharge monthly fixed charges, then that day's energy and VAT.
-- Demand charge (BDT 42) and meter rent (BDT 40) are taken once, on the first recharge in a calendar month.
-- VAT is 5% of energy only and is rounded to the nearest poisha for each daily ledger charge.
-- Recharge never resets the monthly unit counter. Only the first calendar day of a month resets it.
-- “Runs out on” means the first date whose projected closing balance is zero or below. A balance already at/below zero returns the case's `today` date.
-- Recharge advice projects from the end of `today` through the selected target date. A fixed charge is added only if a positive recharge is required and today would be the month's first recharge.
-- Habit “cost” is energy + VAT + applicable monthly fixed charges. Deposits and ending balances are displayed separately.
+- Money is held as integer poisha. Ledger calculations never use binary floating-point BDT values.
+- Daily readings are whole units. A day can allocate units across several slabs.
+- The daily order is opening balance, recharge, first monthly fixed charges, energy, VAT and closing balance.
+- Demand charge is BDT 42 and meter rent is BDT 40. Both are taken once on the first recharge in a calendar month.
+- VAT is 5 percent of energy and is rounded to the nearest poisha for each daily charge.
+- The monthly slab counter resets only on the first calendar day of a month.
+- "Runs out on" means the first date whose projected closing balance is zero or below.
+- Recharge advice starts after `today` and includes a fixed charge only when a positive deposit is needed and today would be the month's first recharge.
+- Habit cost means energy, VAT and applicable monthly fixed charges. Deposits and ending balances are reported separately.
 
 ## Run locally
 
-### Requirements
-
-- [Bun](https://bun.sh/) 1.4 or newer
-- A modern browser; no database, account, API key or paid service is required
+You need Bun 1.4 or newer and a modern browser. The app has no database, account, API key or paid service.
 
 ```bash
 git clone https://github.com/Seyamalam/lsh26-t031-p10.git
@@ -61,7 +99,7 @@ bun run dev
 
 Open <http://localhost:3000>.
 
-### Verification
+Run the same checks used for the submission:
 
 ```bash
 bun run test
@@ -70,42 +108,38 @@ bun run lint
 bun run build
 ```
 
-The current suite contains 39 tests, including every slab boundary, multi-boundary allocation, monthly reset, first-recharge fixed charge, forecast/advice edge cases, fixture validation and strict energy/VAT equality across all 25 published cases.
-
-## Problem-solving approach
-
-The tariff was implemented first as small, pure domain functions, then reused unchanged by history reconstruction, forecasting, target-date advice and policy comparison. The UI is a judge-facing explanation layer over those outputs: the chart has an auditable daily table, the recharge answer has a reconciled breakdown, and the comparison visibly separates consumed cost from deposited cash. All public cases pass through the same upload validation and calculation path expected for judge-supplied cases.
+The suite has 42 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecasts, deposit advice, CSV output, fixture validation and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
-- **Application:** Next.js 16 App Router, React 19, TypeScript
-- **Interface:** Tailwind CSS 4, shadcn preset `b0`, beUI file upload, TanStack React Table and Recharts
-- **Testing:** Vitest
-- **Data:** Static JSON plus client-side JSON upload; no backend or database
-- **Deployment:** Vercel at <https://lsh26-t031-p10.vercel.app>
+- Next.js 16 App Router, React 19 and TypeScript
+- Tailwind CSS 4, shadcn preset `b0` and the beUI file upload block
+- TanStack React Table and Recharts through shadcn Chart
+- Vitest
+- Vercel deployment
 
-See [`LICENSES.md`](LICENSES.md) for third-party materials.
+See [`LICENSES.md`](LICENSES.md) for license details.
 
 ## Team contribution
 
-| Registered member | GitHub | Major contribution | Evidence |
-| --- | --- | --- | --- |
-| Touhidul Alam Seyam | [`Seyamalam`](https://github.com/Seyamalam) | Sole implementation owner: architecture, tariff and ledger engine, fixture support, tests, interface, visual QA and documentation | Repository history and all source files |
-| Pratik Dev | Not provided | Unable to participate in the build due to a severe health crisis | Registered team member; no implementation contribution claimed |
+| Registered member   | GitHub                                      | Contribution                                                                                                                             |
+| ------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Touhidul Alam Seyam | [`Seyamalam`](https://github.com/Seyamalam) | Sole implementation owner for architecture, tariff and ledger code, fixture handling, tests, interface, browser checks and documentation |
+| Pratik Dev          | Not provided                                | Unable to participate in the build due to a severe health crisis                                                                         |
 
-## AI usage
+## AI use
 
-OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the disclosed Meterwise brand mark and favicon. Touhidul Alam Seyam verified the work by reviewing the domain rules, running the 39-test suite across all published cases, running TypeScript/ESLint/production builds, and testing desktop and mobile rendering in Chromium. AI output was not accepted as a calculation oracle; invariant and hand-calculated tests provide the evidence.
+OpenAI Codex/ChatGPT and OpenCode assisted with implementation, tests, interface work and documentation. OpenAI image generation produced the disclosed Meterwise mark and favicon. Touhidul Alam Seyam reviewed the calculation rules, checked hand-calculated cases, ran the full automated suite and completed TypeScript, ESLint, production build and browser checks. AI output was not treated as a calculation oracle.
 
 ## Known limitations
 
-- Uploaded cases, case selection and table filters are intentionally session-only; refreshing restores the bundled public fixture. Theme preference persists.
-- The calculator follows the published whole-unit schema and does not accept fractional daily units.
-- VAT rounding is explicitly performed per daily energy charge to the nearest poisha; the problem does not publish an alternative rounding interval.
+- Imported fixtures, the selected case and table filters last only for the current browser session. A refresh restores the bundled fixture. Theme preference persists.
+- The published schema uses whole-unit readings, so the importer rejects fractional daily units.
+- VAT is rounded per daily energy charge to the nearest poisha because the problem does not specify another rounding interval.
 
 ## Repository records
 
-- [`EVENT.md`](EVENT.md) — event code and empty pre-event-material declaration
-- [`evaluation-manifest.json`](evaluation-manifest.json) — structured judging evidence
-- [`LICENSES.md`](LICENSES.md) — third-party material and AI disclosure
-- [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md) — exactly one-minute recording script and checklist
+- [`EVENT.md`](EVENT.md) records the event code and pre-event material declaration.
+- [`evaluation-manifest.json`](evaluation-manifest.json) maps claims to routes, screenshots, tests and source files.
+- [`LICENSES.md`](LICENSES.md) lists third-party material and AI use.
+- [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md) contains the one-minute recording script.

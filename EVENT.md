@@ -1,16 +1,16 @@
-# Event Start Record
+# Event start record
 
-- **Team ID:** `LSH26-T031`
-- **Problem ID:** `P10`
-- **Repository:** `lsh26-t031-p10`
-- **Event start code:** `LSH26-8490-C900`
-- **Repository created before release:** No
+- Team ID: `LSH26-T031`
+- Problem ID: `P10`
+- Repository: `lsh26-t031-p10`
+- Event start code: `LSH26-8490-C900`
+- Repository created before release: No
 
-## Material present before 6:00 PM
+## Material present before 6:00 pm
 
 | Material | Source or original location | What was already present |
-|---|---|---|
-| None | N/A | Repository was empty |
+| -------- | --------------------------- | ------------------------ |
+| None     | N/A                         | The repository was empty |
 
 ## Declaration
 

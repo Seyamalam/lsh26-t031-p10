@@ -12,8 +12,22 @@ const ledgerRow: DailyLedgerRow = {
   units: 2,
   monthlyUnitsAfter: 76,
   slabAllocations: [
-    { label: "1-75", from: 1, to: 75, units: 1, ratePoisha: 463, costPoisha: 463 },
-    { label: "76-200", from: 76, to: 200, units: 1, ratePoisha: 526, costPoisha: 526 },
+    {
+      label: "1-75",
+      from: 1,
+      to: 75,
+      units: 1,
+      ratePoisha: 463,
+      costPoisha: 463,
+    },
+    {
+      label: "76-200",
+      from: 76,
+      to: 200,
+      units: 1,
+      ratePoisha: 526,
+      costPoisha: 526,
+    },
   ],
   energyCostPoisha: 989,
   vatPoisha: 49,
@@ -32,11 +46,16 @@ const totals: CostTotals = {
 
 describe("CSV exports", () => {
   it("exports every ledger row with money values and an escaped slab trace", () => {
-    const csv = ledgerCsv("CASE,01", [ledgerRow, { ...ledgerRow, date: "2026-01-02" }])
+    const csv = ledgerCsv("CASE,01", [
+      ledgerRow,
+      { ...ledgerRow, date: "2026-01-02" },
+    ])
 
     expect(csv.split("\r\n")).toHaveLength(4)
     expect(csv).toContain('"CASE,01",2026-01-01,100.50,2,74,76')
-    expect(csv).toContain("1-75: 1 units at 4.63 BDT = 4.63 BDT; 76-200: 1 units at 5.26 BDT = 5.26 BDT")
+    expect(csv).toContain(
+      "1-75: 1 units at 4.63 BDT = 4.63 BDT; 76-200: 1 units at 5.26 BDT = 5.26 BDT"
+    )
     expect(csv).toContain(",200.00,82.00,9.89,0.49,208.12")
   })
 
@@ -52,7 +71,9 @@ describe("CSV exports", () => {
     })
 
     expect(csv.split("\r\n")).toHaveLength(4)
-    expect(csv).toContain("PUB-01,2026-01 | 2026-02 | 2026-03,low balance,100.00,5.00,82.00,187.00")
+    expect(csv).toContain(
+      "PUB-01,2026-01 | 2026-02 | 2026-03,low balance,100.00,5.00,82.00,187.00"
+    )
     expect(csv).toContain(",pass,low balance,82.00")
     expect(csv).toContain("monthly,100.00,5.00,164.00,269.00")
   })

@@ -9,40 +9,95 @@
   "pre_event_materials": [],
   "sample_data": {
     "loads_published_fixture": true,
-    "method": "Bundled default data, case selection, and JSON file upload through the same validation/calculation path",
-    "reset_instructions": "Select Reset sample in the top bar to restore all 25 published cases and PUB-01."
+    "bundled_fixture": "public/data/P10_prepaid_meter_public.json",
+    "import_example": "public/data/P10_import_example.json",
+    "upload_source": "components/fixture-upload.tsx",
+    "validation_source": "src/data/fixture.ts",
+    "validation_test": "src/data/fixture.test.ts",
+    "reset_instructions": "Click Reset published fixture in the header to restore all 25 cases and select PUB-01."
   },
-  "problem_solving_method": "A decimal-safe pure tariff engine allocates each day across calendar-month slabs, reconstructs the ledger, and is reused by forecasting, target-date advice, and deterministic habit comparison. The interface exposes traces and reconciliation instead of hiding calculations.",
+  "problem_solving_method": "Integer-poisha tariff functions allocate each day across calendar-month slabs. The same ledger results feed the balance trace, run-out forecast, deposit advice and habit comparison.",
   "requirements": {
     "R1": {
       "status": "complete",
-      "evidence": "/dashboard via components/dashboard-view.tsx; beUI fixture upload in components/fixture-upload.tsx and components/fixture-provider.tsx; official data in public/data/P10_prepaid_meter_public.json"
+      "route": "/dashboard#history-checks",
+      "screenshot": "public/screenshots/meterwise-overview.png",
+      "tests": ["src/data/fixture.test.ts"],
+      "source_files": [
+        "public/data/P10_prepaid_meter_public.json",
+        "src/domain/summary.ts",
+        "components/dashboard-view.tsx",
+        "components/judge-shortcuts.tsx"
+      ],
+      "proof": "The selected case shows its light month, heavy summer month and largest late-week recharge. The bundled fixture contains 25 six-month cases."
     },
     "R2": {
       "status": "complete",
-      "evidence": "/dashboard balance chart in components/analysis-charts.tsx and /ledger table in components/ledger-table.tsx; calculation engine in src/domain/ledger.ts and src/domain/tariff.ts"
+      "routes": ["/dashboard", "/ledger#fixed-charge-evidence"],
+      "screenshots": [
+        "public/screenshots/meterwise-overview.png",
+        "public/screenshots/daily-ledger.png"
+      ],
+      "tests": [
+        "src/domain/ledger.test.ts",
+        "src/domain/tariff.test.ts",
+        "src/domain/export.test.ts"
+      ],
+      "source_files": [
+        "src/domain/ledger.ts",
+        "src/domain/tariff.ts",
+        "components/analysis-charts.tsx",
+        "components/ledger-table.tsx",
+        "src/domain/export.ts"
+      ],
+      "proof": "The chart marks every recharge. The full ledger shows opening balance, calendar-month units, slab allocation, recharge, BDT 82 first-recharge fixed charge, energy, VAT and closing balance. The full ledger is downloadable as CSV."
     },
     "R3": {
       "status": "complete",
-      "evidence": "/advisor via components/advisor-view.tsx backed by src/domain/advice.ts and src/domain/advice.test.ts"
+      "routes": ["/advisor#run-out-answer", "/advisor#deposit-breakdown"],
+      "screenshot": "public/screenshots/recharge-advisor.png",
+      "tests": ["src/domain/advice.test.ts"],
+      "source_files": ["src/domain/advice.ts", "components/advisor-view.tsx"],
+      "proof": "The route gives the run-out date and reconciles the target-date deposit into first-slab energy, higher-slab increment, VAT, applicable fixed charges and balance credit."
     },
     "R4": {
       "status": "complete",
-      "evidence": "/comparison via components/comparison-view.tsx and components/analysis-charts.tsx; src/domain/comparison.ts; all-case invariants in src/data/fixture.test.ts"
+      "route": "/comparison#habit-invariant",
+      "screenshot": "public/screenshots/habit-comparison.png",
+      "tests": ["src/data/fixture.test.ts", "src/domain/export.test.ts"],
+      "source_files": [
+        "src/domain/comparison.ts",
+        "components/comparison-view.tsx",
+        "components/analysis-charts.tsx",
+        "src/domain/export.ts"
+      ],
+      "proof": "Both policies use identical daily consumption and the same calendar-month slab counter. Energy and VAT must match exactly. Consumed cost, deposits and balances are kept separate, and both policy summaries are downloadable as CSV."
     }
+  },
+  "verification": {
+    "commands": [
+      "bun run test",
+      "bun run typecheck",
+      "bun run lint",
+      "bun run build"
+    ],
+    "latest_result": "42 tests passed; TypeScript, ESLint and the Next.js 16.3.3 production build completed successfully.",
+    "browser_routes_checked": [
+      "/dashboard",
+      "/ledger",
+      "/advisor",
+      "/comparison"
+    ]
   },
   "team_members": [
     {
       "registered_name": "Touhidul Alam Seyam",
       "github_username": "Seyamalam",
-      "major_contribution": "Sole implementation owner: architecture, tariff and ledger engine, fixture support, automated testing, application interface, visual verification and documentation.",
+      "major_contribution": "Sole implementation owner for architecture, tariff and ledger code, fixture handling, automated tests, interface, visual checks and documentation.",
       "evidence_paths_or_commits": [
         "src/domain",
         "src/data",
-        "components/dashboard-view.tsx",
-        "components/ledger-table.tsx",
-        "components/advisor-view.tsx",
-        "components/comparison-view.tsx",
+        "components",
         "app"
       ]
     },
@@ -54,29 +109,27 @@
     }
   ],
   "major_design_decisions": [
-    "Represent money as integer poisha and split units across all crossed slabs.",
-    "Use start-of-day recharge and fixed charges before that day's consumption, matching the clarification's habit ordering.",
-    "Reuse one pure tariff/ledger engine across all four requirements.",
-    "Keep consumed cost separate from deposits and make energy/VAT equality an explicit tested invariant.",
-    "Provide judge-supplied JSON upload, all-case selection, and reset without a backend.",
-    "Use the beUI file-upload block for one local JSON file with immediate validation and no server upload."
+    "Represent money as integer poisha and split a day across every crossed slab.",
+    "Apply start-of-day recharge and the month's first fixed charges before that day's consumption.",
+    "Reuse the tariff and ledger functions across all four requirements.",
+    "Keep consumed cost separate from deposits and test exact energy and VAT equality.",
+    "Parse judge JSON locally and provide reset without a backend."
   ],
   "known_limitations": [
-    "Uploaded fixture state is not persisted across page refreshes.",
-    "The published whole-unit reading schema is enforced; fractional units are rejected.",
-    "VAT is rounded per daily energy charge to the nearest poisha because no alternative rounding interval is specified.",
-    "Fixture selection and table state are client-side and reset on a full page refresh."
+    "Imported fixture state and table state do not persist across a full refresh.",
+    "The whole-unit reading schema rejects fractional daily units.",
+    "VAT is rounded per daily energy charge to the nearest poisha because no other interval is specified."
   ],
   "ai_tools_used": [
     {
       "tool": "OpenAI Codex/ChatGPT",
-      "used_for": "Implementation assistance, test generation, interface composition, documentation, and generation of the disclosed brand mark and favicon.",
-      "how_output_was_verified": "Participant review, hand-calculated boundary tests, 39 automated tests including all 25 fixtures, TypeScript and ESLint checks, production build, and Chromium desktop/mobile visual QA."
+      "used_for": "Implementation assistance, tests, interface composition, documentation, and the disclosed mark and favicon.",
+      "how_output_was_verified": "Participant review, hand-calculated tariff cases, 42 automated tests, TypeScript, ESLint, a production build and Chromium route checks."
     },
     {
       "tool": "OpenCode",
       "used_for": "Implementation and review assistance.",
-      "how_output_was_verified": "Touhidul Alam Seyam reviewed all changes and verified them with the same automated test, type, lint, build, and browser QA workflow."
+      "how_output_was_verified": "Touhidul Alam Seyam reviewed all changes and used the same automated and browser checks."
     }
   ],
   "licenses_file": "LICENSES.md",

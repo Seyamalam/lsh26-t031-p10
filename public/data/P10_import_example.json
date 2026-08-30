@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.2",
+  "problem_id": "P10",
+  "format_note": "Small import example for checking the JSON shape. Reset to the bundled public fixture for the full six-month judging data.",
+  "cases": [
+    {
+      "case_id": "IMPORT-EXAMPLE",
+      "opening_balance_bdt": "500.00",
+      "days": [
+        { "date": "2026-01-01", "units": 2 },
+        { "date": "2026-01-31", "units": 2 },
+        { "date": "2026-02-01", "units": 3 },
+        { "date": "2026-02-28", "units": 3 },
+        { "date": "2026-03-01", "units": 5 },
+        { "date": "2026-03-31", "units": 5 },
+        { "date": "2026-04-01", "units": 10 },
+        { "date": "2026-04-30", "units": 10 },
+        { "date": "2026-05-01", "units": 18 },
+        { "date": "2026-05-31", "units": 18 },
+        { "date": "2026-06-01", "units": 15 },
+        { "date": "2026-06-30", "units": 15 }
+      ],
+      "recharges": [
+        { "date": "2026-01-01", "amount_bdt": "400.00" },
+        { "date": "2026-02-01", "amount_bdt": "500.00" },
+        { "date": "2026-03-25", "amount_bdt": "700.00" },
+        { "date": "2026-04-01", "amount_bdt": "900.00" },
+        { "date": "2026-05-26", "amount_bdt": "2500.00" },
+        { "date": "2026-06-01", "amount_bdt": "1000.00" }
+      ],
+      "today": "2026-06-30",
+      "usual_daily_units": 5,
+      "target_date": "2026-07-31",
+      "comparison": {
+        "months": ["2026-04", "2026-05", "2026-06"],
+        "source": "daily_units",
+        "daily_units": 5,
+        "opening_balance_bdt": "0.00",
+        "low_threshold_bdt": "100.00",
+        "low_amount_bdt": "2000.00",
+        "monthly_amount_bdt": "2000.00"
+      }
+    }
+  ]
+}
