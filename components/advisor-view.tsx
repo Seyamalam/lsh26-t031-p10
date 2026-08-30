@@ -36,7 +36,7 @@ export function AdvisorView() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
-        <Card>
+        <Card id="run-out-answer" className="scroll-mt-20">
           <CardHeader>
             <CardDescription className="flex items-center gap-2"><CalendarClock className="size-4" /> Projected run-out</CardDescription>
             <CardTitle className="text-2xl">{runOut ? prettyDate(runOut.date) : "Beyond 10 years"}</CardTitle>
@@ -52,7 +52,7 @@ export function AdvisorView() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="deposit-breakdown" className="scroll-mt-20">
           <CardHeader className="border-b">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>

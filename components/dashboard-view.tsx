@@ -4,6 +4,7 @@ import { BatteryMedium, CalendarClock, CircleDollarSign, Zap } from "lucide-reac
 
 import { BalanceHistoryChart, MonthlyConsumptionChart } from "@/components/analysis-charts"
 import { useFixture } from "@/components/fixture-provider"
+import { JudgeShortcuts } from "@/components/judge-shortcuts"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -22,9 +23,11 @@ export function DashboardView() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div><h2 className="text-xl font-semibold tracking-tight">Household snapshot</h2><p className="mt-1 text-sm text-muted-foreground">{activeCase.days[0].date} to {activeCase.today}</p></div>
+        <div><h1 className="text-xl font-semibold tracking-tight">Household snapshot</h1><p className="mt-1 text-sm text-muted-foreground">{activeCase.days[0].date} to {activeCase.today}</p></div>
         <Badge variant="outline" className="w-fit font-mono">{caseId} · {activeCase.days.length} readings</Badge>
       </div>
+
+      <JudgeShortcuts />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={CircleDollarSign} label="Closing balance" value={formatBdt(last.closingBalancePoisha)} note={`After ${prettyDate(activeCase.today)}`} alert={last.closingBalancePoisha <= 0} />
@@ -38,7 +41,7 @@ export function DashboardView() {
           <CardHeader><CardTitle>Balance history</CardTitle><CardDescription>Daily closing balance; orange markers are recharge days.</CardDescription><CardAction><Badge variant="outline">{activeCase.recharges.length} markers</Badge></CardAction></CardHeader>
           <CardContent><BalanceHistoryChart rows={ledger} /></CardContent>
         </Card>
-        <Card>
+        <Card id="history-checks" className="scroll-mt-20">
           <CardHeader><CardTitle>Monthly consumption</CardTitle><CardDescription>Calendar-month unit totals.</CardDescription></CardHeader>
           <CardContent><MonthlyConsumptionChart months={monthly.months} /></CardContent>
         </Card>

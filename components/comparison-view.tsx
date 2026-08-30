@@ -43,7 +43,7 @@ export function ComparisonView() {
         </div>
       </div>
 
-      <Alert className={comparison.invariant ? "border-teal-500/30 bg-teal-500/5" : undefined} variant={comparison.invariant ? "default" : "destructive"}>
+      <Alert id="habit-invariant" className={`${comparison.invariant ? "border-teal-500/30 bg-teal-500/5" : ""} scroll-mt-20`} variant={comparison.invariant ? "default" : "destructive"}>
         {comparison.invariant ? <CheckCircle2 className="text-teal-600" /> : <TriangleAlert />}
         <AlertTitle>{comparison.invariant ? "Invariant passed: energy and VAT match exactly" : "Invariant failed"}</AlertTitle>
         <AlertDescription>Recharge timing cannot change energy slab cost. Any difference below comes only from monthly first-recharge fixed charges.</AlertDescription>

@@ -12,12 +12,12 @@ import {
   tableFeatures,
   useTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronLeft, ChevronRight, Download, Search } from "lucide-react"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Download, ReceiptText, Search } from "lucide-react"
 
 import { useFixture } from "@/components/fixture-provider"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { downloadTextFile } from "@/lib/download"
@@ -41,6 +41,14 @@ const columns = helper.columns([
   helper.accessor("openingBalancePoisha", { header: "Opening", cell: ({ getValue }) => formatBdt(getValue()) }),
   helper.accessor("units", { header: "Units", cell: ({ getValue }) => getValue().toFixed(2) }),
   helper.accessor("monthlyUnitsAfter", { header: "Month total", cell: ({ getValue }) => `${getValue().toFixed(2)} kWh` }),
+  helper.accessor("slabAllocations", {
+    header: "Slab allocation",
+    cell: ({ getValue }) => (
+      <span className="block min-w-48 whitespace-normal font-sans text-[11px] leading-4 text-muted-foreground">
+        {getValue().map((item) => `${item.label}: ${item.units}u at ${(item.ratePoisha / 100).toFixed(2)}`).join(" · ") || "No units"}
+      </span>
+    ),
+  }),
   helper.accessor("rechargePoisha", {
     header: "Recharge",
     cell: ({ getValue }) => getValue() > 0 ? <span className="font-medium text-teal-700 dark:text-teal-300">+{formatBdt(getValue())}</span> : "—",
@@ -58,6 +66,7 @@ export function LedgerTable() {
   const { activeCase, ledger } = useFixture()
   const table = useTable({ features, columns, data: ledger, initialState: { pagination: { pageIndex: 0, pageSize: 15 } } })
   const filteredCount = table.getFilteredRowModel().rows.length
+  const firstFixed = ledger.find((row) => row.fixedChargesPoisha > 0)
 
   return (
     <div className="space-y-4">
@@ -88,6 +97,15 @@ export function LedgerTable() {
           </Button>
         </div>
       </div>
+
+      <Card id="fixed-charge-evidence" className="scroll-mt-20 border-primary/25 bg-primary/[0.025]" size="sm">
+        <CardHeader>
+          <div className="grid size-8 place-items-center rounded-md bg-primary/10 text-primary"><ReceiptText aria-hidden="true" className="size-4" /></div>
+          <CardDescription>First recharge fixed charges</CardDescription>
+          <CardTitle className="font-mono text-lg">BDT 42 demand + BDT 40 rent = BDT 82</CardTitle>
+          <CardAction><Badge variant="outline" className="font-mono">{firstFixed?.date ?? "No charged recharge"}</Badge></CardAction>
+        </CardHeader>
+      </Card>
 
       <Card>
         <CardHeader className="border-b py-4">
