@@ -2,6 +2,87 @@ import type { FixtureDocument, MeterCase } from "../domain/types"
 
 export const LAST_DATASET_KEY = "meterwise:selected-dataset"
 export const FORECAST_ENGINE_VERSION = "forecast-v1"
+export type WorkspaceDatasetKind = "bundled" | "saved" | "temporary"
+
+export const forecastIdentity = (
+  fingerprint: string,
+  caseId: string,
+  version: string
+) => JSON.stringify([fingerprint, caseId, version])
+
+export function keyedForecastValue<T>(
+  state: { key: string; value: T } | null,
+  expectedKey: string
+): T | undefined {
+  return state?.key === expectedKey ? state.value : undefined
+}
+
+const controlIdentity = (datasetId: string, caseId: string, scope: string) =>
+  JSON.stringify([datasetId, caseId, scope])
+
+export class MemoryControlStore {
+  private values = new Map<string, unknown>()
+
+  get<T>(datasetId: string, caseId: string, scope: string): T | undefined {
+    return this.values.get(controlIdentity(datasetId, caseId, scope)) as
+      | T
+      | undefined
+  }
+
+  set(datasetId: string, caseId: string, scope: string, value: unknown): void {
+    this.values.set(controlIdentity(datasetId, caseId, scope), value)
+  }
+}
+
+type PersistentControlAdapter = {
+  get: () => Promise<unknown>
+  set: (value: unknown) => Promise<void>
+}
+
+export async function routeControlRead<T>(
+  kind: WorkspaceDatasetKind,
+  datasetId: string,
+  caseId: string,
+  scope: string,
+  memory: MemoryControlStore,
+  persistent: PersistentControlAdapter
+): Promise<T | undefined> {
+  if (kind === "temporary") return memory.get<T>(datasetId, caseId, scope)
+  return (await persistent.get()) as T | undefined
+}
+
+export async function routeControlWrite(
+  kind: WorkspaceDatasetKind,
+  datasetId: string,
+  caseId: string,
+  scope: string,
+  value: unknown,
+  memory: MemoryControlStore,
+  persistent: PersistentControlAdapter
+): Promise<void> {
+  if (kind === "temporary") {
+    memory.set(datasetId, caseId, scope, value)
+    return
+  }
+  await persistent.set(value)
+}
+
+export class LatestRequestGuard {
+  private latest = 0
+
+  begin(): number {
+    this.latest += 1
+    return this.latest
+  }
+
+  invalidate(): void {
+    this.latest += 1
+  }
+
+  isCurrent(request: number): boolean {
+    return request === this.latest
+  }
+}
 
 export function activateFixture(
   datasetId: string,
@@ -59,16 +140,19 @@ export class LruCache<K, V> {
 }
 
 export class ForecastModelCache<T> {
-  private cache = new Map<string, T>()
+  private cache = new Map<string, { fingerprint: string; value: T }>()
   get(fingerprint: string, caseId: string, version: string): T | undefined {
-    return this.cache.get(`${fingerprint}:${caseId}:${version}`)
+    return this.cache.get(forecastIdentity(fingerprint, caseId, version))?.value
   }
   set(fingerprint: string, caseId: string, version: string, value: T): void {
-    this.cache.set(`${fingerprint}:${caseId}:${version}`, value)
+    this.cache.set(forecastIdentity(fingerprint, caseId, version), {
+      fingerprint,
+      value,
+    })
   }
   clearFingerprint(fingerprint: string): void {
-    for (const key of this.cache.keys())
-      if (key.startsWith(`${fingerprint}:`)) this.cache.delete(key)
+    for (const [key, entry] of this.cache)
+      if (entry.fingerprint === fingerprint) this.cache.delete(key)
   }
 }
 

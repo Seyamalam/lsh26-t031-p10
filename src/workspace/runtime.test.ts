@@ -4,10 +4,16 @@ import fixtureJson from "../../public/data/P10_import_example.json"
 import { validateFixture } from "../data/fixture"
 import {
   activateFixture,
+  forecastIdentity,
   ForecastModelCache,
+  keyedForecastValue,
+  LatestRequestGuard,
   LruCache,
+  MemoryControlStore,
   readLastDatasetId,
   runWithWorkerFallback,
+  routeControlRead,
+  routeControlWrite,
   shouldUseForecastWorker,
   shouldUseParseWorker,
   writeLastDatasetId,
@@ -54,6 +60,83 @@ describe("workspace runtime", () => {
     cache.set("fingerprint", "PUB-01", "v1", "result")
     expect(cache.get("fingerprint", "PUB-01", "v1")).toBe("result")
     expect(cache.get("fingerprint", "PUB-01", "v2")).toBeUndefined()
+  })
+
+  it("never exposes a worker forecast from another fixture, case, or engine", () => {
+    const currentKey = forecastIdentity("fingerprint-a", "CASE-1", "v1")
+    const state = { key: currentKey, value: "forecast-a" }
+    expect(keyedForecastValue(state, currentKey)).toBe("forecast-a")
+    expect(
+      keyedForecastValue(
+        state,
+        forecastIdentity("fingerprint-b", "CASE-1", "v1")
+      )
+    ).toBeUndefined()
+    expect(
+      keyedForecastValue(
+        state,
+        forecastIdentity("fingerprint-a", "CASE-2", "v1")
+      )
+    ).toBeUndefined()
+    expect(
+      keyedForecastValue(
+        state,
+        forecastIdentity("fingerprint-a", "CASE-1", "v2")
+      )
+    ).toBeUndefined()
+  })
+
+  it("keeps temporary controls in memory without calling persistent storage", async () => {
+    const memory = new MemoryControlStore()
+    const persistent = {
+      get: vi.fn(async () => 99),
+      set: vi.fn(async () => undefined),
+    }
+    await routeControlWrite(
+      "temporary",
+      "once:fixture",
+      "CASE-1",
+      "budget",
+      4321,
+      memory,
+      persistent
+    )
+    await expect(
+      routeControlRead<number>(
+        "temporary",
+        "once:fixture",
+        "CASE-1",
+        "budget",
+        memory,
+        persistent
+      )
+    ).resolves.toBe(4321)
+    expect(persistent.set).not.toHaveBeenCalled()
+    expect(persistent.get).not.toHaveBeenCalled()
+  })
+
+  it("lets only the latest async activation commit", async () => {
+    const guard = new LatestRequestGuard()
+    const committed: string[] = []
+    let releaseFirst!: () => void
+    const firstRead = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    const first = guard.begin()
+    const firstRequest = firstRead.then(() => {
+      if (guard.isCurrent(first)) committed.push("A")
+    })
+    const second = guard.begin()
+    const secondRequest = Promise.resolve().then(() => {
+      if (guard.isCurrent(second)) committed.push("B")
+    })
+    releaseFirst()
+    await Promise.all([firstRequest, secondRequest])
+    expect(committed).toEqual(["B"])
+    expect(guard.isCurrent(first)).toBe(false)
+    expect(guard.isCurrent(second)).toBe(true)
+    guard.invalidate()
+    expect(guard.isCurrent(second)).toBe(false)
   })
 
   it("uses workers only above thresholds and falls back safely", async () => {

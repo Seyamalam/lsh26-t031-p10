@@ -93,7 +93,7 @@ Imports are parsed in the browser and are never sent to a server.
 
 1. Click `Load JSON` in the header.
 2. Choose [`public/data/P10_import_example.json`](public/data/P10_import_example.json) to check the accepted shape.
-3. Choose `Use once` to keep the file in memory until refresh, or `Save on this device` to retain the original JSON, validated fixture, provenance, last case and user controls in this browser.
+3. Choose `Use once` to keep the file and its case-scoped controls in memory until refresh, or `Save on this device` to retain the original JSON, validated fixture, provenance, last case and user controls in this browser.
 4. The selected case and every route update from the imported data.
 5. Open `/datasets` to rename, open, export, replace or delete saved data. Identical JSON is deduplicated by SHA-256 fingerprint without overwriting its saved name or controls.
 6. Click the reset button to return to [`public/data/P10_prepaid_meter_public.json`](public/data/P10_prepaid_meter_public.json), which contains the full 25-case judging fixture. Reset does not erase the saved catalog.
@@ -136,7 +136,7 @@ bun run lint
 bun run build
 ```
 
-The suite has 82 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state, IndexedDB catalog operations, fingerprint deduplication, namespaced controls, worker fallback, model caching, tooltip formatting and strict energy and VAT equality across all 25 published cases.
+The suite has 85 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state, IndexedDB catalog operations, fingerprint deduplication, temporary and saved control isolation, stale activation guards, worker fallback, identity-gated model results, tooltip formatting and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
@@ -163,7 +163,7 @@ OpenAI Codex/ChatGPT and OpenCode assisted with implementation, tests, interface
 
 ## Known limitations
 
-- Saved datasets and their case-scoped user controls remain only in the current browser and deployment origin. They do not sync across devices and may be removed by browser storage controls. `Use once` imports and route-local filters remain memory-only.
+- Saved datasets and their case-scoped user controls remain only in the current browser and deployment origin. They do not sync across devices and may be removed by browser storage controls. `Use once` imports, their controls and route-local filters remain memory-only.
 - Only the selected saved dataset ID is written to localStorage. Raw JSON and normalized fixtures stay in IndexedDB. Ledger, forecast and anomaly results are never persisted.
 - The published schema uses whole-unit readings, so the importer rejects fractional daily units.
 - VAT is rounded per daily energy charge to the nearest poisha because the problem does not specify another rounding interval.

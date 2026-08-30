@@ -28,7 +28,7 @@ No other external starter, template, UI kit, font, icon or asset is used. The wr
 
 ## AI tools
 
-OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the Meterwise mark and favicon. Touhidul Alam Seyam reviewed the output, checked hand-calculated edge cases, ran 82 automated tests across all 25 public cases, ran TypeScript and ESLint checks, produced a clean Next.js build and completed browser checks.
+OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the Meterwise mark and favicon. Touhidul Alam Seyam reviewed the output, checked hand-calculated edge cases, ran 85 automated tests across all 25 public cases, ran TypeScript and ESLint checks, produced a clean Next.js build and completed browser checks.
 
 ## Original work statement
 

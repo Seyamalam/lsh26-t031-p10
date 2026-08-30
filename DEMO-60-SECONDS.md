@@ -9,7 +9,7 @@ Record <https://lsh26-t031-p10.vercel.app> in a 16:9 browser window. Start with 
 | 0:16-0:27 | Open Daily ledger. Point to the BDT 82 fixed-charge proof, slab column and CSV button. | "Each row shows slab allocation, recharge, the first monthly fixed charge, energy, VAT and closing balance."                                             |
 | 0:27-0:39 | Open Recharge advisor. Change Last through and trace the breakdown.                    | "The advisor gives the run-out date and splits today's deposit into energy, higher-slab cost, VAT, fixed charges and current balance."                   |
 | 0:39-0:51 | Open Habit comparison. Point to the invariant, decision and export.                    | "Both habits use the same consumption and slab counter. Energy and VAT match, so any cost difference can only be fixed charges."                        |
-| 0:51-1:00 | Open Datasets and point to the saved record and fingerprint.                           | "Imports can run once or stay in this browser with provenance and case-scoped controls. The full suite passes 82 tests."                                |
+| 0:51-1:00 | Open Datasets and point to the saved record and fingerprint.                           | "Imports can run once or stay in this browser with provenance and case-scoped controls. The full suite passes 85 tests."                                |
 
 ## Recording checklist
 

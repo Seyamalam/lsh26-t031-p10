@@ -27,9 +27,15 @@ import {
 } from "@/src/workspace/catalog"
 import {
   FORECAST_ENGINE_VERSION,
+  forecastIdentity,
   ForecastModelCache,
+  keyedForecastValue,
+  LatestRequestGuard,
   LruCache,
+  MemoryControlStore,
   readLastDatasetId,
+  routeControlRead,
+  routeControlWrite,
   writeLastDatasetId,
 } from "@/src/workspace/runtime"
 import { forecastAccelerated } from "@/src/workspace/workers"
@@ -97,14 +103,16 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   const [workspaceReady, setWorkspaceReady] = useState(false)
   const [workspaceError, setWorkspaceError] = useState("")
   const [uploadError, setUploadError] = useState("")
-  const [workerForecast, setWorkerForecast] = useState<ForecastBundle | null>(
-    null
-  )
+  const [workerForecast, setWorkerForecast] = useState<{
+    key: string
+    value: ForecastBundle
+  } | null>(null)
   const [forecastLoading, setForecastLoading] = useState(false)
   const [forecastWorkerUsed, setForecastWorkerUsed] = useState(false)
-  const fixtureChangeId = useRef(0)
+  const activationGuard = useRef(new LatestRequestGuard())
   const catalogRef = useRef<WorkspaceCatalog | null>(null)
   const fixtureCache = useRef(new LruCache<string, FixtureDocument>(4))
+  const temporaryControls = useRef(new MemoryControlStore())
   const activeCase =
     fixture.cases.find((item) => item.case_id === caseId) ?? fixture.cases[0]
 
@@ -142,6 +150,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
+    const requestId = activationGuard.current.begin()
     void (async () => {
       try {
         const catalog = new WorkspaceCatalog()
@@ -153,7 +162,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
         const restored = restoredId
           ? await catalog.getDataset(restoredId)
           : undefined
-        if (cancelled) return
+        if (cancelled || !activationGuard.current.isCurrent(requestId)) return
         if (restored) {
           activate({
             id: restored.id,
@@ -165,7 +174,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
           })
         } else if (restoredId) writeLastDatasetId(window.localStorage, null)
       } catch (error) {
-        if (!cancelled)
+        if (!cancelled && activationGuard.current.isCurrent(requestId))
           setWorkspaceError(
             error instanceof Error
               ? error.message
@@ -222,11 +231,19 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     return result
   }, [activeCase, datasetFingerprint])
 
+  const currentForecastKey = forecastIdentity(
+    datasetFingerprint,
+    activeCase.case_id,
+    FORECAST_ENGINE_VERSION
+  )
+
   useEffect(() => {
     if (synchronousForecast) return
     let cancelled = false
+    const requestKey = currentForecastKey
     void (async () => {
       await Promise.resolve()
+      if (!cancelled) setForecastLoading(true)
       const cached = sharedForecastCache.get(
         datasetFingerprint,
         activeCase.case_id,
@@ -234,12 +251,12 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
       )
       if (cached) {
         if (!cancelled) {
-          setWorkerForecast(cached)
+          setWorkerForecast({ key: requestKey, value: cached })
           setForecastLoading(false)
+          setForecastWorkerUsed(false)
         }
         return
       }
-      if (!cancelled) setForecastLoading(true)
       try {
         const { forecast, usedWorker } = await forecastAccelerated(
           activeCase.days
@@ -251,7 +268,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
           FORECAST_ENGINE_VERSION,
           forecast
         )
-        setWorkerForecast(forecast)
+        setWorkerForecast({ key: requestKey, value: forecast })
         setForecastWorkerUsed(usedWorker)
         setForecastLoading(false)
       } catch (error) {
@@ -266,7 +283,12 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [activeCase, datasetFingerprint, synchronousForecast])
+  }, [
+    activeCase,
+    currentForecastKey,
+    datasetFingerprint,
+    synchronousForecast,
+  ])
 
   const selectCase = (nextCaseId: string | null) => {
     if (
@@ -285,8 +307,9 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
 
   const selectDataset = async (nextDatasetId: string | null) => {
-    if (!nextDatasetId || nextDatasetId === datasetId) return
-    fixtureChangeId.current += 1
+    if (!nextDatasetId) return
+    const requestId = activationGuard.current.begin()
+    if (nextDatasetId === datasetId) return
     if (nextDatasetId === BUNDLED_DATASET_ID) {
       activate({
         id: BUNDLED_DATASET_ID,
@@ -304,6 +327,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
       cached && summary
         ? { ...summary, fixture: cached }
         : await catalogRef.current?.getDataset(nextDatasetId)
+    if (!activationGuard.current.isCurrent(requestId)) return
     if (!record) {
       setWorkspaceError(
         "Saved dataset was not found. It may have been removed in another tab."
@@ -328,10 +352,10 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     name?: string
   ) => {
     if (!file) return { ok: false, error: "Choose a JSON fixture." }
-    const requestId = ++fixtureChangeId.current
+    const requestId = activationGuard.current.begin()
     try {
       const parsed = await readFixtureUpload(file)
-      if (requestId !== fixtureChangeId.current)
+      if (!activationGuard.current.isCurrent(requestId))
         return {
           ok: false,
           error: "A newer fixture action replaced this upload.",
@@ -342,6 +366,11 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
         rawJson: parsed.rawJson,
         fixture: parsed.fixture,
       })
+      if (!activationGuard.current.isCurrent(requestId))
+        return {
+          ok: false,
+          error: "A newer fixture action replaced this upload.",
+        }
       if (mode === "save") {
         if (!catalogRef.current)
           throw new Error(
@@ -349,6 +378,11 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
           )
         const result = await catalogRef.current.saveDataset(candidate)
         await refreshDatasets()
+        if (!activationGuard.current.isCurrent(requestId))
+          return {
+            ok: false,
+            error: "A newer fixture action replaced this upload.",
+          }
         activate({
           id: result.record.id,
           name: result.record.name,
@@ -370,7 +404,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
       writeLastDatasetId(window.localStorage, null)
       return { ok: true }
     } catch (error) {
-      if (requestId !== fixtureChangeId.current)
+      if (!activationGuard.current.isCurrent(requestId))
         return {
           ok: false,
           error: "A newer fixture action replaced this upload.",
@@ -385,7 +419,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetFixture = () => {
-    fixtureChangeId.current += 1
+    activationGuard.current.invalidate()
     activate({
       id: BUNDLED_DATASET_ID,
       name: "Bundled public fixture",
@@ -446,12 +480,18 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
   const getControlState = async <T,>(scope: string) => {
     try {
-      return (
-        (await catalogRef.current?.getControlState<T>(
-          datasetId,
-          caseId,
-          scope
-        )) ?? undefined
+      return await routeControlRead<T>(
+        datasetKind,
+        datasetId,
+        caseId,
+        scope,
+        temporaryControls.current,
+        {
+          get: () =>
+            catalogRef.current?.getControlState<T>(datasetId, caseId, scope) ??
+            Promise.resolve(undefined),
+          set: () => Promise.resolve(),
+        }
       )
     } catch (error) {
       setWorkspaceError(
@@ -462,11 +502,23 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
   const setControlState = async (scope: string, value: unknown) => {
     try {
-      await catalogRef.current?.setControlState(
+      await routeControlWrite(
+        datasetKind,
         datasetId,
         caseId,
         scope,
-        value
+        value,
+        temporaryControls.current,
+        {
+          get: () => Promise.resolve(undefined),
+          set: (next) =>
+            catalogRef.current?.setControlState(
+              datasetId,
+              caseId,
+              scope,
+              next
+            ) ?? Promise.resolve(),
+        }
       )
     } catch (error) {
       setWorkspaceError(
@@ -502,8 +554,11 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
         exportDataset,
         getControlState,
         setControlState,
-        forecast: synchronousForecast ?? workerForecast,
-        forecastLoading,
+        forecast:
+          synchronousForecast ??
+          keyedForecastValue(workerForecast, currentForecastKey) ??
+          null,
+        forecastLoading: synchronousForecast ? false : forecastLoading,
         forecastWorkerUsed: synchronousForecast ? false : forecastWorkerUsed,
         ...computed,
       }}
