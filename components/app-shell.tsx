@@ -49,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
+      <a href="#main-content" className="sr-only fixed left-3 top-3 z-50 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground focus:not-sr-only">Skip to content</a>
       <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader className="border-b border-sidebar-border p-3">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -120,7 +121,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="flex-1 p-3 sm:p-5 lg:p-6">{children}</div>
+        <main id="main-content" className="flex-1 p-3 sm:p-5 lg:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

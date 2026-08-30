@@ -11,8 +11,8 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 export const metadata: Metadata = {
-  title: "Meterwise — Prepaid recharge advisor",
-  description: "Trace every taka, forecast run-out, and compare prepaid meter recharge habits without imaginary slab savings.",
+  title: "Meterwise | Prepaid Recharge Advisor",
+  description: "P10 prepaid meter ledger, recharge forecast, and three-month policy comparison.",
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
