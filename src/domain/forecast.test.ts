@@ -26,7 +26,7 @@ describe("forecast model evaluation", () => {
     expect(result.reason).toContain("lower holdout RMSE")
   })
 
-  it("produces a deterministic 30-day forecast with a confidence band", () => {
+  it("produces a deterministic 30-day forecast with an RMSE uncertainty band", () => {
     const first = forecastConsumption(seasonalReadings(150), 30)
     const second = forecastConsumption(seasonalReadings(150), 30)
 

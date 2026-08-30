@@ -21,15 +21,17 @@ import {
 
 export function FixtureUpload() {
   const { loadFixture } = useFixture()
+  const [open, setOpen] = useState(false)
   const [items, setItems] = useState<FileUploadItem[]>([])
 
   const parseFile = async (item: FileUploadItem, file: File | undefined) => {
     const result = await loadFixture(file)
     setItems((current) => settleUploadQueue(current, item.id, result))
+    if (result.ok) setOpen(false)
   }
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={<Button variant="outline" size="sm" />}>
         <Upload data-icon="inline-start" />
         <span className="hidden lg:inline">Load JSON</span>

@@ -273,7 +273,7 @@ export function forecastConsumption(
       features:
         "Trend, day-of-week seasonality, previous day, previous week, and trailing 7-day mean.",
       confidence:
-        "The 90% confidence band uses 1.645 times the selected model's 30-day holdout RMSE.",
+        "RMSE uncertainty band = prediction ± 1.645 × selected model holdout RMSE. It is an error guide, not a calibrated probability interval.",
     },
   }
 }

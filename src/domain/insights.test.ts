@@ -27,7 +27,7 @@ describe("consumption anomalies", () => {
     })
     expect(anomalies[0]?.reason).toContain("30.0 units")
     expect(anomalies[0]?.reason).toContain("14-day average of 10.0")
-    expect(anomalies[0]?.reason).toContain("2.5σ threshold")
+    expect(anomalies[0]?.reason).toContain("adaptive score threshold of 2.5")
   })
 })
 

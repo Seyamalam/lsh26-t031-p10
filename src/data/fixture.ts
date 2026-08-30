@@ -3,6 +3,7 @@ import type {
   FixtureDocument,
   MeterCase,
 } from "../domain/types"
+import { addDays } from "../domain/dates"
 
 export const MAX_FIXTURE_BYTES = 5 * 1024 * 1024
 
@@ -119,6 +120,9 @@ function validateCase(candidate: unknown, ids: Set<string>): MeterCase {
         `${caseId}: readings must have unique dates in ascending order.`
       )
     }
+    if (index > 0 && day.date !== addDays(priorDate, 1)) {
+      throw new Error(`${caseId}: daily readings must be consecutive.`)
+    }
     priorDate = day.date
     return { date: day.date, units: day.units as number }
   })
@@ -132,6 +136,10 @@ function validateCase(candidate: unknown, ids: Set<string>): MeterCase {
       recharge.amount_bdt,
       `${caseId}: invalid recharge at position ${index + 1}.`
     )
+    if (recharge.date < days[0]!.date || recharge.date > days.at(-1)!.date)
+      throw new Error(
+        `${caseId}: recharge dates must stay within the reading range.`
+      )
     return { date: recharge.date, amount_bdt: recharge.amount_bdt }
   })
 
@@ -183,6 +191,9 @@ function validateComparison(
   const readingMonths = new Set(days.map((day) => day.date.slice(0, 7)))
   if (months.some((month) => !readingMonths.has(month)))
     throw new Error(`${caseId}: every comparison month must occur in readings.`)
+  const readingDates = new Set(days.map((day) => day.date))
+  if (months.some((month) => !readingDates.has(`${month}-01`)))
+    throw new Error(`${caseId}: every comparison month must include day 1.`)
   if (candidate.source !== "readings" && candidate.source !== "daily_units")
     throw new Error(`${caseId}: invalid comparison source.`)
   if (

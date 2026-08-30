@@ -176,6 +176,30 @@ describe("uploaded fixture validation", () => {
     }
   )
 
+  it("rejects a gap in daily readings", () => {
+    const value = cloneFixture()
+    value.cases[0]!.days.splice(10, 1)
+    expect(() => validateFixture(value)).toThrow("consecutive")
+  })
+
+  it("rejects a comparison month that does not include day 1", () => {
+    const value = cloneFixture()
+    const current = value.cases[0]!
+    current.days = current.days.slice(14)
+    current.recharges = current.recharges.filter(
+      (recharge) => recharge.date >= current.days[0]!.date
+    )
+    current.today = current.days.at(-1)!.date
+    current.comparison.months = ["2026-01", "2026-02", "2026-03"]
+    expect(() => validateFixture(value)).toThrow("day 1")
+  })
+
+  it("rejects a recharge outside the reading range", () => {
+    const value = cloneFixture()
+    value.cases[0]!.recharges[0]!.date = "2025-12-31"
+    expect(() => validateFixture(value)).toThrow("reading range")
+  })
+
   it("rejects an oversized file before reading its contents", async () => {
     let read = false
     const file = {

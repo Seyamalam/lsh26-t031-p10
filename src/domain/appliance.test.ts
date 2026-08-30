@@ -47,4 +47,20 @@ describe("appliance simulator", () => {
     expect(result.fixedChargesPoisha).toBe(0)
     expect(result.fixedChargeReason).toContain("not added")
   })
+
+  it("resets the slab counter after a month-end projection boundary", () => {
+    const result = simulateAppliance({
+      startDate: "2026-01-31",
+      days: 2,
+      wattage: 1_000,
+      hoursPerDay: 1,
+      quantity: 1,
+      baselineDailyUnits: 0,
+      monthlyUnitsBefore: 75,
+      includeFirstRechargeCharges: false,
+    })
+
+    expect(result.incrementalEnergyPoisha).toBe(989)
+    expect(result.incrementalVatPoisha).toBe(49)
+  })
 })

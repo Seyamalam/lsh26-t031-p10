@@ -26,7 +26,7 @@ import type { ForecastPoint } from "@/src/domain/forecast"
 
 const forecastConfig = {
   predictedUnits: { label: "Forecast", color: "var(--chart-1)" },
-  interval: { label: "90% band", color: "var(--chart-1)" },
+  interval: { label: "RMSE band", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 export function ForecastChart({ points }: { points: ForecastPoint[] }) {

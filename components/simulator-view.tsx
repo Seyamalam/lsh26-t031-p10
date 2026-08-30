@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { simulateAppliance } from "@/src/domain/appliance"
+import { addDays } from "@/src/domain/dates"
 import { formatBdt } from "@/src/domain/money"
 
 export function SimulatorView() {
@@ -35,7 +36,7 @@ function SimulatorPanel() {
   const result = useMemo(
     () =>
       simulateAppliance({
-        startDate: activeCase.today,
+        startDate: addDays(activeCase.today, 1),
         days: form.days,
         wattage: form.wattage,
         hoursPerDay: form.hours,
@@ -73,12 +74,14 @@ function SimulatorPanel() {
           </CardHeader>
           <CardContent className="grid gap-3 pt-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
             <NumberField
+              id="appliance-wattage"
               label="Wattage"
               value={form.wattage}
               min={1}
               onChange={(v) => set("wattage", v)}
             />
             <NumberField
+              id="appliance-hours"
               label="Hours per day"
               value={form.hours}
               min={0}
@@ -87,6 +90,7 @@ function SimulatorPanel() {
               onChange={(v) => set("hours", v)}
             />
             <NumberField
+              id="appliance-quantity"
               label="Quantity"
               value={form.quantity}
               min={1}
@@ -94,6 +98,7 @@ function SimulatorPanel() {
               onChange={(v) => set("quantity", Math.max(1, Math.round(v)))}
             />
             <NumberField
+              id="projection-days"
               label="Projection days"
               value={form.days}
               min={1}
@@ -193,11 +198,13 @@ function SimulatorPanel() {
 }
 
 function NumberField({
+  id,
   label,
   value,
   onChange,
   ...props
 }: {
+  id: string
   label: string
   value: number
   onChange: (value: number) => void
@@ -207,8 +214,11 @@ function NumberField({
 }) {
   return (
     <div className="grid gap-1.5">
-      <Label className="text-xs">{label}</Label>
+      <Label htmlFor={id} className="text-xs">
+        {label}
+      </Label>
       <Input
+        id={id}
         type="number"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}

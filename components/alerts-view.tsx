@@ -76,12 +76,14 @@ function AlertsPanel() {
         </CardHeader>
         <CardContent className="grid gap-3 pt-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field
+            id="monthly-budget"
             label="Monthly budget (BDT)"
             value={budgetBdt}
             min={1}
             onChange={setBudgetBdt}
           />
           <Field
+            id="budget-warning"
             label="Budget warning (%)"
             value={budgetWarning}
             min={1}
@@ -89,13 +91,15 @@ function AlertsPanel() {
             onChange={setBudgetWarning}
           />
           <Field
+            id="runout-warning"
             label="Run-out warning (days)"
             value={runOutWarning}
             min={1}
             onChange={setRunOutWarning}
           />
           <Field
-            label="Anomaly threshold (σ)"
+            id="anomaly-threshold"
+            label="Anomaly score threshold"
             value={sensitivity}
             min={1}
             step={0.1}
@@ -123,7 +127,8 @@ function AlertsPanel() {
             <div>
               <CardTitle>Consumption anomalies</CardTitle>
               <CardDescription>
-                Trailing 14-day mean with an adaptive minimum spread.
+                Score = |reading - mean| / max(standard deviation, 10% of mean,
+                0.5).
               </CardDescription>
             </div>
             <Badge variant={anomalies.length ? "destructive" : "secondary"}>
@@ -151,7 +156,7 @@ function AlertsPanel() {
                       item.direction === "high" ? "destructive" : "secondary"
                     }
                   >
-                    {item.direction} · {item.score.toFixed(2)}σ
+                    {item.direction} · score {item.score.toFixed(2)}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {item.reason}
@@ -166,11 +171,13 @@ function AlertsPanel() {
 }
 
 function Field({
+  id,
   label,
   value,
   onChange,
   ...props
 }: {
+  id: string
   label: string
   value: number
   onChange: (value: number) => void
@@ -180,8 +187,11 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5">
-      <Label className="text-xs">{label}</Label>
+      <Label htmlFor={id} className="text-xs">
+        {label}
+      </Label>
       <Input
+        id={id}
         type="number"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}

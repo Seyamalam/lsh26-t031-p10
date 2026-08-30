@@ -58,7 +58,7 @@ export function ForecastView() {
           <CardHeader className="border-b">
             <CardTitle>Daily units</CardTitle>
             <CardDescription>
-              Selected forecast with 90% confidence band.
+              Selected forecast with an RMSE uncertainty band.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
@@ -76,8 +76,12 @@ export function ForecastView() {
             <Evidence label="Selection" value={evaluation.reason} />
             <Evidence label="Features" value={forecast.explanation.features} />
             <Evidence
-              label="Interval"
+              label="Uncertainty"
               value={forecast.explanation.confidence}
+            />
+            <Evidence
+              label="Metrics"
+              value="MAE = mean(|actual - predicted|). RMSE = sqrt(mean(error²))."
             />
             <div className="flex items-center gap-2 rounded-md border border-teal-500/30 bg-teal-500/5 p-3 text-xs">
               <CheckCircle2 className="size-4 shrink-0 text-teal-600" /> Better

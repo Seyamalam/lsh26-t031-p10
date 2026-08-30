@@ -38,7 +38,7 @@ export function detectConsumptionAnomalies(
   if (!Number.isInteger(windowDays) || windowDays < 7)
     throw new Error("Anomaly window must be at least 7 days.")
   if (!Number.isFinite(sensitivity) || sensitivity < 1)
-    throw new Error("Anomaly sensitivity must be at least 1 sigma.")
+    throw new Error("Anomaly score threshold must be at least 1.")
 
   const anomalies: ConsumptionAnomaly[] = []
   for (let index = windowDays; index < readings.length; index += 1) {
@@ -63,7 +63,7 @@ export function detectConsumptionAnomalies(
       deviationUnits: Number(deviationUnits.toFixed(2)),
       score: Number(score.toFixed(2)),
       direction,
-      reason: `${reading.units.toFixed(1)} units is ${Math.abs(deviationUnits).toFixed(1)} ${direction === "high" ? "above" : "below"} the ${windowDays}-day average of ${expectedUnits.toFixed(1)} and crosses the ${sensitivity.toFixed(1)}σ threshold.`,
+      reason: `${reading.units.toFixed(1)} units is ${Math.abs(deviationUnits).toFixed(1)} ${direction === "high" ? "above" : "below"} the ${windowDays}-day average of ${expectedUnits.toFixed(1)} and crosses the adaptive score threshold of ${sensitivity.toFixed(1)}.`,
     })
   }
   return anomalies

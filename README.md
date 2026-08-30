@@ -29,11 +29,11 @@ The dashboard starts with seven judge shortcuts. Each one links to the exact lig
 
 | System | Route | Test | Source |
 | --- | --- | --- | --- |
-| Evaluated 30-day demand forecast with automatic model selection and confidence band | [`/forecast`](https://lsh26-t031-p10.vercel.app/forecast) | `src/domain/forecast.test.ts` | `src/domain/forecast.ts`, `components/forecast-view.tsx` |
+| Evaluated 30-day demand forecast with automatic model selection and RMSE uncertainty band | [`/forecast`](https://lsh26-t031-p10.vercel.app/forecast) | `src/domain/forecast.test.ts` | `src/domain/forecast.ts`, `components/forecast-view.tsx` |
 | Explainable consumption anomalies and configurable budget and run-out alerts | [`/alerts`](https://lsh26-t031-p10.vercel.app/alerts) | `src/domain/insights.test.ts` | `src/domain/insights.ts`, `components/alerts-view.tsx` |
 | Slab-aware appliance cost and 5, 10 and 20 percent saving scenarios | [`/simulator`](https://lsh26-t031-p10.vercel.app/simulator) | `src/domain/appliance.test.ts` | `src/domain/appliance.ts`, `components/simulator-view.tsx` |
 
-The forecast trains a regularized linear regression on trend, weekday seasonality, lagged readings and a trailing mean. A 30-day holdout compares it with a 7-day mean baseline. The route selects the lower-RMSE result and derives its 90 percent band from holdout error. All analysis runs in TypeScript in the browser.
+The forecast trains a regularized linear regression on trend, weekday seasonality, lagged readings and a trailing mean. A 30-day holdout compares it with a 7-day mean baseline. The route selects the lower-RMSE result and shows prediction plus or minus 1.645 times holdout RMSE as an uncertainty guide, not a calibrated probability interval. All analysis runs in TypeScript in the browser.
 
 ## Screenshots
 
@@ -121,7 +121,7 @@ bun run lint
 bun run build
 ```
 
-The suite has 67 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state and strict energy and VAT equality across all 25 published cases.
+The suite has 71 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
