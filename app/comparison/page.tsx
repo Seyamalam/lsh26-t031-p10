@@ -1,3 +1,5 @@
+import { ComparisonView } from "@/components/comparison-view"
+
 export default function ComparisonPage() {
-  return <div className="text-sm text-muted-foreground">Loading comparison…</div>
+  return <ComparisonView />
 }
