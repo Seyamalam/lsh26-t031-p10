@@ -250,8 +250,7 @@ export async function parseFixtureFile(
     throw new Error("Fixture JSON must be 5 MiB or smaller.")
   const extensionIsJson = file.name?.toLowerCase().endsWith(".json") ?? false
   const mimeIsJson = file.type === "application/json"
-  const blankMimeWithJsonName = !file.type && extensionIsJson
-  if (file.name && !mimeIsJson && !blankMimeWithJsonName)
+  if (file.name && !mimeIsJson && !extensionIsJson)
     throw new Error(
       "Choose a JSON fixture file. ZIP and other formats are not accepted."
     )

@@ -1,6 +1,8 @@
 "use client"
 
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -20,6 +22,58 @@ import {
 } from "@/components/ui/chart"
 import { prettyMonth } from "@/src/domain/dates"
 import type { CostTotals, DailyLedgerRow } from "@/src/domain/types"
+import type { ForecastPoint } from "@/src/domain/forecast"
+
+const forecastConfig = {
+  predictedUnits: { label: "Forecast", color: "var(--chart-1)" },
+  interval: { label: "90% band", color: "var(--chart-1)" },
+} satisfies ChartConfig
+
+export function ForecastChart({ points }: { points: ForecastPoint[] }) {
+  const data = points.map((point) => ({
+    ...point,
+    interval: [point.lowerUnits, point.upperUnits],
+  }))
+  return (
+    <ChartContainer
+      config={forecastConfig}
+      className="aspect-auto h-[300px] w-full"
+    >
+      <AreaChart
+        data={data}
+        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+        accessibilityLayer
+      >
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="date"
+          tickLine={false}
+          axisLine={false}
+          minTickGap={52}
+          tickFormatter={(value: string) => value.slice(5)}
+        />
+        <YAxis tickLine={false} axisLine={false} width={42} unit=" kWh" />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <Area
+          type="monotone"
+          dataKey="interval"
+          stroke="none"
+          fill="var(--color-interval)"
+          fillOpacity={0.14}
+          isAnimationActive={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="predictedUnits"
+          stroke="var(--color-predictedUnits)"
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ChartContainer>
+  )
+}
 
 const balanceConfig = {
   balance: { label: "Balance", color: "var(--chart-1)" },
@@ -203,8 +257,18 @@ export function ComparisonCostChart({
             />
           }
         />
-        <Bar dataKey="low" fill="#14b8a6" radius={[3, 3, 0, 0]} isAnimationActive={false} />
-        <Bar dataKey="monthly" fill="#f59e0b" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+        <Bar
+          dataKey="low"
+          fill="#14b8a6"
+          radius={[3, 3, 0, 0]}
+          isAnimationActive={false}
+        />
+        <Bar
+          dataKey="monthly"
+          fill="#f59e0b"
+          radius={[3, 3, 0, 0]}
+          isAnimationActive={false}
+        />
       </BarChart>
     </ChartContainer>
   )

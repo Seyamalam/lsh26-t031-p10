@@ -13,6 +13,7 @@ import { parseFixtureFile, validateFixture } from "@/src/data/fixture"
 
 type FixtureContextValue = {
   fixture: FixtureDocument
+  fixtureRevision: number
   activeCase: MeterCase
   caseId: string
   ledger: ReturnType<typeof runDailyLedger>
@@ -35,6 +36,7 @@ const FixtureContext = createContext<FixtureContextValue | null>(null)
 
 export function FixtureProvider({ children }: { children: React.ReactNode }) {
   const [fixture, setFixture] = useState<FixtureDocument>(publishedFixture)
+  const [fixtureRevision, setFixtureRevision] = useState(0)
   const [caseId, setCaseId] = useState(publishedFixture.cases[0].case_id)
   const [uploadError, setUploadError] = useState("")
   const fixtureChangeId = useRef(0)
@@ -86,9 +88,15 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
         }
       setFixture(next)
       setCaseId(next.cases[0].case_id)
+      setFixtureRevision((value) => value + 1)
       setUploadError("")
       return { ok: true }
     } catch (error) {
+      if (requestId !== fixtureChangeId.current)
+        return {
+          ok: false,
+          error: "A newer fixture action replaced this upload.",
+        }
       const message =
         error instanceof Error
           ? error.message
@@ -102,6 +110,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     fixtureChangeId.current += 1
     setFixture(publishedFixture)
     setCaseId(publishedFixture.cases[0].case_id)
+    setFixtureRevision((value) => value + 1)
     setUploadError("")
   }
 
@@ -109,6 +118,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     <FixtureContext.Provider
       value={{
         fixture,
+        fixtureRevision,
         activeCase,
         caseId,
         uploadError,

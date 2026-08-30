@@ -189,4 +189,25 @@ describe("uploaded fixture validation", () => {
     await expect(parseFixtureFile(file)).rejects.toThrow("5 MiB")
     expect(read).toBe(false)
   })
+
+  it("rejects ZIP and accepts JSON with a blank browser MIME type", async () => {
+    const source = JSON.stringify(fixture)
+    await expect(
+      parseFixtureFile({
+        size: source.length,
+        name: "fixture.zip",
+        type: "application/zip",
+        text: async () => source,
+      })
+    ).rejects.toThrow("Choose a JSON fixture file")
+
+    await expect(
+      parseFixtureFile({
+        size: source.length,
+        name: "fixture.json",
+        type: "",
+        text: async () => source,
+      })
+    ).resolves.toMatchObject({ problem_id: "P10" })
+  })
 })
