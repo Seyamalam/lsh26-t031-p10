@@ -1,3 +1,5 @@
+import { LedgerTable } from "@/components/ledger-table"
+
 export default function LedgerPage() {
-  return <div className="text-sm text-muted-foreground">Loading ledger…</div>
+  return <LedgerTable />
 }

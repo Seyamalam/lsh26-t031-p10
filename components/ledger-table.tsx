@@ -1,0 +1,137 @@
+"use client"
+
+import {
+  createColumnHelper,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
+} from "@tanstack/react-table"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
+
+import { useFixture } from "@/components/fixture-provider"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { formatBdt } from "@/src/domain/money"
+import type { DailyLedgerRow } from "@/src/domain/types"
+
+const features = tableFeatures({
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowSortingFeature,
+  rowPaginationFeature,
+  filteredRowModel: createFilteredRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+})
+
+const helper = createColumnHelper<typeof features, DailyLedgerRow>()
+const columns = helper.columns([
+  helper.accessor("date", { header: "Date" }),
+  helper.accessor("openingBalancePoisha", { header: "Opening", cell: ({ getValue }) => formatBdt(getValue()) }),
+  helper.accessor("units", { header: "Units", cell: ({ getValue }) => getValue().toFixed(2) }),
+  helper.accessor("monthlyUnitsAfter", { header: "Month total", cell: ({ getValue }) => `${getValue().toFixed(2)} kWh` }),
+  helper.accessor("rechargePoisha", {
+    header: "Recharge",
+    cell: ({ getValue }) => getValue() > 0 ? <span className="font-medium text-teal-700 dark:text-teal-300">+{formatBdt(getValue())}</span> : "—",
+  }),
+  helper.accessor("fixedChargesPoisha", { header: "Fixed", cell: ({ getValue }) => getValue() > 0 ? formatBdt(getValue()) : "—" }),
+  helper.accessor("energyCostPoisha", { header: "Energy", cell: ({ getValue }) => formatBdt(getValue()) }),
+  helper.accessor("vatPoisha", { header: "VAT", cell: ({ getValue }) => formatBdt(getValue()) }),
+  helper.accessor("closingBalancePoisha", {
+    header: "Closing",
+    cell: ({ getValue }) => <span className={getValue() < 0 ? "font-semibold text-destructive" : "font-semibold"}>{formatBdt(getValue())}</span>,
+  }),
+])
+
+export function LedgerTable() {
+  const { activeCase, ledger } = useFixture()
+  const table = useTable({ features, columns, data: ledger, initialState: { pagination: { pageIndex: 0, pageSize: 15 } } })
+  const filteredCount = table.getFilteredRowModel().rows.length
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold tracking-tight">Daily ledger</h1>
+            <Badge variant="outline" className="font-mono text-[10px]">{activeCase.case_id}</Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">Every reading, charge and recharge in meter order.</p>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <Search aria-hidden="true" className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            aria-label="Filter ledger rows"
+            className="pl-8"
+            placeholder="Filter by date or value"
+            value={(table.state.globalFilter as string) ?? ""}
+            onChange={(event) => table.setGlobalFilter(event.target.value)}
+          />
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader className="border-b py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-sm">Reconstructed balance</CardTitle>
+              <CardDescription>{filteredCount} of {ledger.length} days</CardDescription>
+            </div>
+            <Badge variant="secondary">First recharge carries monthly fixed charges</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : (
+                        <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2 text-xs" onClick={header.column.getToggleSortingHandler()}>
+                          <table.FlexRender header={header} />
+                          <ArrowUpDown aria-hidden="true" className="ml-1 size-3" />
+                        </Button>
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className={row.original.rechargePoisha > 0 ? "bg-teal-50/50 dark:bg-teal-950/20" : undefined}>
+                  {row.getAllCells().map((cell) => (
+                    <TableCell key={cell.id} className="font-mono text-xs tabular-nums"><table.FlexRender cell={cell} /></TableCell>
+                  ))}
+                </TableRow>
+              )) : (
+                <TableRow><TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">No ledger rows match this filter.</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
+            <p className="text-xs text-muted-foreground">Page {table.state.pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()}>
+                <ChevronLeft aria-hidden="true" className="size-4" /> Previous
+              </Button>
+              <Button size="sm" variant="outline" disabled={!table.getCanNextPage()} onClick={() => table.nextPage()}>
+                Next <ChevronRight aria-hidden="true" className="size-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
