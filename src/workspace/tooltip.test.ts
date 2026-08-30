@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest"
 
-import { balanceTooltipItems } from "./tooltip"
+import { BALANCE_CHART_SERIES, balanceTooltipItems } from "./tooltip"
 
 describe("balance tooltip", () => {
+  it("keeps the daily line and recharge markers on separate series", () => {
+    expect(BALANCE_CHART_SERIES).toEqual({
+      dailyLine: "balance",
+      rechargeMarker: "markerBalance",
+    })
+  })
+
   it("renders one balance and one recharge from shared chart payloads", () => {
     const payload = [
       {

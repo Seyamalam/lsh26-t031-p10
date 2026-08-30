@@ -12,9 +12,11 @@
     "bundled_fixture": "public/data/P10_prepaid_meter_public.json",
     "import_example": "public/data/P10_import_example.json",
     "upload_source": "components/fixture-upload.tsx",
-    "validation_source": "src/data/fixture.ts",
-    "validation_test": "src/data/fixture.test.ts",
-    "reset_instructions": "Click Reset published fixture in the header to restore all 25 cases and select PUB-01."
+    "validation_sources": ["src/data/fixture.ts", "src/workspace/fixture.worker.ts"],
+    "validation_tests": ["src/data/fixture.test.ts", "src/workspace/runtime.test.ts"],
+    "workspace_route": "/datasets",
+    "workspace_screenshot": "public/screenshots/dataset-workspace.png",
+    "reset_instructions": "Click Reset published fixture in the header to restore all 25 cases and select PUB-01. Saved datasets remain available in the catalog."
   },
   "problem_solving_method": "Integer-poisha tariff functions allocate each day across calendar-month slabs. The same ledger results feed the balance trace, run-out forecast, deposit advice and habit comparison.",
   "requirements": {
@@ -41,7 +43,8 @@
       "tests": [
         "src/domain/ledger.test.ts",
         "src/domain/tariff.test.ts",
-        "src/domain/export.test.ts"
+        "src/domain/export.test.ts",
+        "src/workspace/tooltip.test.ts"
       ],
       "source_files": [
         "src/domain/ledger.ts",
@@ -102,6 +105,21 @@
       "tests": ["src/data/fixture.test.ts", "src/data/upload-queue.test.ts"],
       "source_files": ["src/data/fixture.ts", "src/data/upload-queue.ts", "components/fixture-provider.tsx", "components/fixture-upload.tsx"],
       "proof": "Validation covers calendar dates, schema, problem, comparison inputs, malformed JSON, file type and a 5 MiB pre-read limit. Invalid input preserves the active fixture."
+    },
+    "indexeddb_workspace": {
+      "status": "complete",
+      "route": "/datasets",
+      "screenshot": "public/screenshots/dataset-workspace.png",
+      "tests": ["src/workspace/catalog.test.ts", "src/workspace/runtime.test.ts"],
+      "source_files": ["src/workspace/catalog.ts", "components/fixture-provider.tsx", "components/datasets-view.tsx", "components/app-shell.tsx"],
+      "proof": "Use once remains memory-only. Save on this device stores the original JSON, validated fixture, provenance, last case and case-scoped controls in native IndexedDB. SHA-256 deduplication activates an existing record without changing its name or controls. Only the selected dataset ID is kept in localStorage."
+    },
+    "accelerated_analysis": {
+      "status": "complete",
+      "routes": ["global header Load JSON control", "/forecast"],
+      "tests": ["src/workspace/runtime.test.ts"],
+      "source_files": ["src/workspace/runtime.ts", "src/workspace/workers.ts", "src/workspace/fixture.worker.ts", "src/workspace/forecast.worker.ts"],
+      "proof": "JSON over 250 KB and forecasts over 1000 readings use module workers with a tested synchronous fallback. Normal public cases stay synchronous. Validated fixtures use a four-entry memory LRU and forecast results use an engine-versioned in-memory cache."
     }
   },
   "verification": {
@@ -111,7 +129,7 @@
       "bun run lint",
       "bun run build"
     ],
-    "latest_result": "71 tests passed; TypeScript, ESLint and the Next.js 16.3.3 production build completed successfully.",
+    "latest_result": "82 tests passed; TypeScript, ESLint and the Next.js 16.3.3 production build completed successfully.",
     "browser_routes_checked": [
       "/dashboard",
       "/ledger",
@@ -119,7 +137,8 @@
       "/comparison",
       "/forecast",
       "/alerts",
-      "/simulator"
+      "/simulator",
+      "/datasets"
     ]
   },
   "team_members": [
@@ -146,10 +165,14 @@
     "Apply start-of-day recharge and the month's first fixed charges before that day's consumption.",
     "Reuse the tariff and ledger functions across all four requirements.",
     "Keep consumed cost separate from deposits and test exact energy and VAT equality.",
-    "Parse judge JSON locally and provide reset without a backend."
+    "Parse judge JSON locally and provide reset without a backend.",
+    "Keep saved source data and case-scoped controls in native IndexedDB while never persisting derived ledger or analysis results.",
+    "Store only the selected dataset ID in localStorage, and key in-memory forecast results by fixture fingerprint, case ID and engine version.",
+    "Use module workers only above explicit workload thresholds so the normal 181-reading fixture remains immediate."
   ],
   "known_limitations": [
-    "Imported fixture state and table state do not persist across a full refresh.",
+    "Saved datasets remain only in the current browser and deployment origin. They do not sync across devices and may be cleared by browser storage controls.",
+    "Use once imports and route-local filters are memory-only.",
     "The whole-unit reading schema rejects fractional daily units.",
     "VAT is rounded per daily energy charge to the nearest poisha because no other interval is specified."
   ],
@@ -157,7 +180,7 @@
     {
       "tool": "OpenAI Codex/ChatGPT",
       "used_for": "Implementation assistance, tests, interface composition, documentation, and the disclosed mark and favicon.",
-      "how_output_was_verified": "Participant review, hand-calculated tariff cases, 71 automated tests, TypeScript, ESLint, a production build and Chromium route checks."
+      "how_output_was_verified": "Participant review, hand-calculated tariff cases, 82 automated tests, TypeScript, ESLint, a production build and Chromium route checks."
     },
     {
       "tool": "OpenCode",

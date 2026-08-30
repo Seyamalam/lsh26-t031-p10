@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Select value={caseId} onValueChange={selectCase}>
               <SelectTrigger
                 size="sm"
-                className="w-28 font-mono"
+                className="w-40 font-mono"
                 aria-label="Fixture case"
               >
                 <SelectValue />
@@ -276,7 +276,7 @@ function DatasetSelect({
         className={compact ? "min-w-0 flex-1" : "w-44"}
         aria-label="Dataset"
       >
-        <SelectValue />
+        <SelectValue>{datasetName}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>

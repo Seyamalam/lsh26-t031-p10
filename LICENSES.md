@@ -20,6 +20,7 @@
 | Recharts                     | 3.8.0                                                      | MIT                                   | Balance, usage and comparison charts through shadcn Chart       |
 | Geist Sans and Geist Mono    | Supplied through `next/font`                               | SIL Open Font License 1.1             | Interface and data typography                                   |
 | Vitest                       | 4.1.11                                                     | MIT                                   | Automated tests                                                 |
+| fake-indexeddb               | 6.2.5                                                      | Apache-2.0                            | IndexedDB catalog tests only                                    |
 | LofiStack P10 public fixture | Submission Kit v2.2                                        | Event-provided participant material   | Bundled sample and reset data                                   |
 | Meterwise mark and favicon   | Generated for this submission with OpenAI image generation | AI-generated project asset, disclosed | Sidebar identity and Next.js application icon                   |
 
@@ -27,7 +28,7 @@ No other external starter, template, UI kit, font, icon or asset is used. The wr
 
 ## AI tools
 
-OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the Meterwise mark and favicon. Touhidul Alam Seyam reviewed the output, checked hand-calculated edge cases, ran 42 automated tests across all 25 public cases, ran TypeScript and ESLint checks, produced a clean Next.js build and completed desktop and mobile browser checks.
+OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the Meterwise mark and favicon. Touhidul Alam Seyam reviewed the output, checked hand-calculated edge cases, ran 82 automated tests across all 25 public cases, ran TypeScript and ESLint checks, produced a clean Next.js build and completed browser checks.
 
 ## Original work statement
 

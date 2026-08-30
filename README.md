@@ -32,6 +32,8 @@ The dashboard starts with seven judge shortcuts. Each one links to the exact lig
 | Evaluated 30-day demand forecast with automatic model selection and RMSE uncertainty band | [`/forecast`](https://lsh26-t031-p10.vercel.app/forecast) | `src/domain/forecast.test.ts` | `src/domain/forecast.ts`, `components/forecast-view.tsx` |
 | Explainable consumption anomalies and configurable budget and run-out alerts | [`/alerts`](https://lsh26-t031-p10.vercel.app/alerts) | `src/domain/insights.test.ts` | `src/domain/insights.ts`, `components/alerts-view.tsx` |
 | Slab-aware appliance cost and 5, 10 and 20 percent saving scenarios | [`/simulator`](https://lsh26-t031-p10.vercel.app/simulator) | `src/domain/appliance.test.ts` | `src/domain/appliance.ts`, `components/simulator-view.tsx` |
+| Browser-local dataset catalog, provenance and case-scoped controls | [`/datasets`](https://lsh26-t031-p10.vercel.app/datasets) | `src/workspace/catalog.test.ts`, `src/workspace/runtime.test.ts` | `src/workspace/catalog.ts`, `components/fixture-provider.tsx`, `components/datasets-view.tsx` |
+| Large-file parsing and forecast acceleration with safe fallback | Global JSON loader and [`/forecast`](https://lsh26-t031-p10.vercel.app/forecast) | `src/workspace/runtime.test.ts` | `src/workspace/workers.ts`, `src/workspace/fixture.worker.ts`, `src/workspace/forecast.worker.ts` |
 
 The forecast trains a regularized linear regression on trend, weekday seasonality, lagged readings and a trailing mean. A 30-day holdout compares it with a 7-day mean baseline. The route selects the lower-RMSE result and shows prediction plus or minus 1.645 times holdout RMSE as an uncertainty guide, not a calibrated probability interval. All analysis runs in TypeScript in the browser.
 
@@ -42,12 +44,19 @@ The forecast trains a regularized linear regression on trend, weekday seasonalit
 | ![Dashboard with judge shortcuts, monthly consumption and balance history](public/screenshots/meterwise-overview.png) | ![Daily meter ledger with fixed-charge evidence and slab allocation](public/screenshots/daily-ledger.png) |
 | Recharge advisor                                                                                                      | Habit comparison                                                                                          |
 | ![Recharge advisor with run-out date and deposit breakdown](public/screenshots/recharge-advisor.png)                  | ![Habit comparison with exact energy and VAT invariant](public/screenshots/habit-comparison.png)          |
+| Saved dataset workspace                                                                                               |                                                                                                           |
+| ![Dataset catalog with provenance, readable selector and device storage controls](public/screenshots/dataset-workspace.png) |                                                                                                           |
 
 ## Calculation flow
 
 ```mermaid
 flowchart LR
   J[Bundled or imported JSON] --> V[validateFixture]
+  J --> Q{Use once or save}
+  Q -->|Use once| U[Memory LRU]
+  Q -->|Save| X[(IndexedDB catalog)]
+  X --> U
+  X --> K[Case-scoped controls]
   V --> L[runDailyLedger]
   L --> O[Opening balance]
   O --> R[Start-of-day recharge]
@@ -60,8 +69,12 @@ flowchart LR
   V --> H[Three-month habit comparison]
   H --> I[Energy and VAT equality check]
   V --> M[Forecast backtest and model selection]
+  M --> B[In-memory model cache]
   V --> N[Anomalies and configurable alerts]
   S --> P[Appliance and saving scenarios]
+  J --> W{Large workload}
+  W -->|JSON over 250 KB| Y[Validation worker]
+  W -->|More than 1000 readings| Z[Forecast worker]
 ```
 
 The engine stores money as integer poisha. A day that crosses a slab boundary is split across each applicable slab. Recharging does not reset the monthly unit counter.
@@ -72,7 +85,7 @@ The engine stores money as integer poisha. A day that crosses a slab boundary is
 2. Open `/ledger#fixed-charge-evidence`. The first charged recharge shows BDT 42 demand charge plus BDT 40 meter rent. Sort or filter the table, then use `Export full CSV` to download every ledger row.
 3. Open `/advisor`. Change `Last through` and reconcile the deposit against the visible energy, higher-slab, VAT, fixed charge and balance-credit lines.
 4. Open `/comparison`. Confirm that energy and VAT match exactly. The screen keeps consumed cost separate from deposits. `Export CSV` downloads both policy summaries.
-5. Use `Load JSON` to try an import, then use reset to restore the 25 bundled cases.
+5. Use `Load JSON` to try an import. Choose `Use once` for memory-only analysis or `Save on this device` for the IndexedDB catalog. Use reset to restore the 25 bundled cases.
 
 ## Importing JSON
 
@@ -80,8 +93,10 @@ Imports are parsed in the browser and are never sent to a server.
 
 1. Click `Load JSON` in the header.
 2. Choose [`public/data/P10_import_example.json`](public/data/P10_import_example.json) to check the accepted shape.
-3. The selected case and every route update from the imported data.
-4. Click the reset button to return to [`public/data/P10_prepaid_meter_public.json`](public/data/P10_prepaid_meter_public.json), which contains the full 25-case judging fixture.
+3. Choose `Use once` to keep the file in memory until refresh, or `Save on this device` to retain the original JSON, validated fixture, provenance, last case and user controls in this browser.
+4. The selected case and every route update from the imported data.
+5. Open `/datasets` to rename, open, export, replace or delete saved data. Identical JSON is deduplicated by SHA-256 fingerprint without overwriting its saved name or controls.
+6. Click the reset button to return to [`public/data/P10_prepaid_meter_public.json`](public/data/P10_prepaid_meter_public.json), which contains the full 25-case judging fixture. Reset does not erase the saved catalog.
 
 Each document needs `schema_version`, `problem_id: "P10"` and a non-empty `cases` array. Each case needs an ID, opening balance, ascending whole-unit readings, recharge history, `today`, usual daily use, target date and a comparison object naming exactly three months. Invalid files produce a visible error and do not replace the current data.
 
@@ -101,7 +116,7 @@ The 90-day import example demonstrates the file shape and is long enough for the
 
 ## Run locally
 
-You need Bun 1.4 or newer and a modern browser. The app has no database, account, API key or paid service.
+You need Bun 1.4 or newer and a modern browser. The app has no server database, account, API key or paid service. Saved datasets use the browser's native IndexedDB storage.
 
 ```bash
 git clone https://github.com/Seyamalam/lsh26-t031-p10.git
@@ -121,14 +136,16 @@ bun run lint
 bun run build
 ```
 
-The suite has 71 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state and strict energy and VAT equality across all 25 published cases.
+The suite has 82 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state, IndexedDB catalog operations, fingerprint deduplication, namespaced controls, worker fallback, model caching, tooltip formatting and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
 - Next.js 16 App Router, React 19 and TypeScript
 - Tailwind CSS 4, shadcn preset `b0` and the beUI file upload block
 - TanStack React Table and Recharts through shadcn Chart
+- Native IndexedDB, Web Crypto and module workers
 - Vitest
+- fake-indexeddb for storage tests
 - Vercel deployment
 
 See [`LICENSES.md`](LICENSES.md) for license details.
@@ -146,7 +163,8 @@ OpenAI Codex/ChatGPT and OpenCode assisted with implementation, tests, interface
 
 ## Known limitations
 
-- Imported fixtures, the selected case and table filters last only for the current browser session. A refresh restores the bundled fixture. Theme preference persists.
+- Saved datasets and their case-scoped user controls remain only in the current browser and deployment origin. They do not sync across devices and may be removed by browser storage controls. `Use once` imports and route-local filters remain memory-only.
+- Only the selected saved dataset ID is written to localStorage. Raw JSON and normalized fixtures stay in IndexedDB. Ledger, forecast and anomaly results are never persisted.
 - The published schema uses whole-unit readings, so the importer rejects fractional daily units.
 - VAT is rounded per daily energy charge to the nearest poisha because the problem does not specify another rounding interval.
 

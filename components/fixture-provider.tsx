@@ -404,6 +404,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
   }
   const replaceDataset = async (id: string, file: File) => {
     if (!catalogRef.current) throw new Error("Device workspace is unavailable.")
+    const previous = savedDatasets.find((item) => item.id === id)
     const parsed = await readFixtureUpload(file)
     const candidate = await createDatasetRecord({
       name: file.name,
@@ -413,7 +414,7 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     })
     const replacement = await catalogRef.current.replaceDataset(id, candidate)
     fixtureCache.current.delete(id)
-    sharedForecastCache.clearFingerprint(datasetFingerprint)
+    if (previous) sharedForecastCache.clearFingerprint(previous.fingerprint)
     await refreshDatasets()
     if (id === datasetId)
       activate({
@@ -443,12 +444,36 @@ export function FixtureProvider({ children }: { children: React.ReactNode }) {
     if (!catalogRef.current) throw new Error("Device workspace is unavailable.")
     return catalogRef.current.exportOriginal(id)
   }
-  const getControlState = <T,>(scope: string) =>
-    catalogRef.current?.getControlState<T>(datasetId, caseId, scope) ??
-    Promise.resolve(undefined)
-  const setControlState = (scope: string, value: unknown) =>
-    catalogRef.current?.setControlState(datasetId, caseId, scope, value) ??
-    Promise.resolve()
+  const getControlState = async <T,>(scope: string) => {
+    try {
+      return (
+        (await catalogRef.current?.getControlState<T>(
+          datasetId,
+          caseId,
+          scope
+        )) ?? undefined
+      )
+    } catch (error) {
+      setWorkspaceError(
+        error instanceof Error ? error.message : "Saved controls are unavailable."
+      )
+      return undefined
+    }
+  }
+  const setControlState = async (scope: string, value: unknown) => {
+    try {
+      await catalogRef.current?.setControlState(
+        datasetId,
+        caseId,
+        scope,
+        value
+      )
+    } catch (error) {
+      setWorkspaceError(
+        error instanceof Error ? error.message : "Could not save controls."
+      )
+    }
+  }
 
   return (
     <FixtureContext.Provider

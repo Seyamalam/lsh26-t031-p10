@@ -14,4 +14,4 @@
 
 ## Declaration
 
-This file was added in the first event-work commit. The team will preserve the repository history until results are announced.
+This file was added in the first event-work commit. All application code, tests, documentation and assets were added after the event opened. The team will preserve the repository history until results are announced.

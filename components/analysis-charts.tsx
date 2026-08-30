@@ -23,7 +23,10 @@ import {
 import { prettyMonth } from "@/src/domain/dates"
 import type { CostTotals, DailyLedgerRow } from "@/src/domain/types"
 import type { ForecastPoint } from "@/src/domain/forecast"
-import { balanceTooltipItems } from "@/src/workspace/tooltip"
+import {
+  BALANCE_CHART_SERIES,
+  balanceTooltipItems,
+} from "@/src/workspace/tooltip"
 
 const forecastConfig = {
   predictedUnits: { label: "Forecast", color: "var(--chart-1)" },
@@ -122,14 +125,14 @@ export function BalanceHistoryChart({ rows }: { rows: DailyLedgerRow[] }) {
         <ChartTooltip content={<BalanceTooltip />} />
         <Line
           type="monotone"
-          dataKey="markerBalance"
+          dataKey={BALANCE_CHART_SERIES.dailyLine}
           stroke="var(--color-balance)"
           strokeWidth={2}
           dot={false}
         />
         <Scatter
           data={rechargeData}
-          dataKey="balance"
+          dataKey={BALANCE_CHART_SERIES.rechargeMarker}
           fill="var(--color-recharge)"
           name="Recharge"
         />

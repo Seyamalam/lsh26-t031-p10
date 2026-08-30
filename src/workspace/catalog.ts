@@ -279,14 +279,18 @@ export class WorkspaceCatalog {
   }
 
   async clearAll(): Promise<void> {
-    const database = await this.open()
-    const transaction = database.transaction(
-      ["datasets", "controls"],
-      "readwrite"
-    )
-    transaction.objectStore("datasets").clear()
-    transaction.objectStore("controls").clear()
-    await transactionDone(transaction)
+    try {
+      const database = await this.open()
+      const transaction = database.transaction(
+        ["datasets", "controls"],
+        "readwrite"
+      )
+      transaction.objectStore("datasets").clear()
+      transaction.objectStore("controls").clear()
+      await transactionDone(transaction)
+    } catch (error) {
+      throw storageError(error)
+    }
   }
 
   async setControlState(
@@ -295,18 +299,22 @@ export class WorkspaceCatalog {
     scope: string,
     value: unknown
   ): Promise<void> {
-    const database = await this.open()
-    const transaction = database.transaction("controls", "readwrite")
-    const record: ControlRecord = {
-      key: `${datasetId}\u0000${caseId}\u0000${scope}`,
-      datasetId,
-      caseId,
-      scope,
-      value,
-      updatedAt: new Date().toISOString(),
+    try {
+      const database = await this.open()
+      const transaction = database.transaction("controls", "readwrite")
+      const record: ControlRecord = {
+        key: `${datasetId}\u0000${caseId}\u0000${scope}`,
+        datasetId,
+        caseId,
+        scope,
+        value,
+        updatedAt: new Date().toISOString(),
+      }
+      transaction.objectStore("controls").put(record)
+      await transactionDone(transaction)
+    } catch (error) {
+      throw storageError(error)
     }
-    transaction.objectStore("controls").put(record)
-    await transactionDone(transaction)
   }
 
   async getControlState<T>(

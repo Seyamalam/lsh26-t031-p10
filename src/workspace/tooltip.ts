@@ -3,6 +3,12 @@ type TooltipPayload = {
   value?: unknown
   payload?: Record<string, unknown>
 }
+
+export const BALANCE_CHART_SERIES = {
+  dailyLine: "balance",
+  rechargeMarker: "markerBalance",
+} as const
+
 export function balanceTooltipItems(
   payload: TooltipPayload[]
 ): { label: "Balance" | "Recharge"; value: number }[] {
