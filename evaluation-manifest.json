@@ -74,6 +74,36 @@
       "proof": "Both policies use identical daily consumption and the same calendar-month slab counter. Energy and VAT must match exactly. Consumed cost, deposits and balances are kept separate, and both policy summaries are downloadable as CSV."
     }
   },
+  "bonus_features": {
+    "evaluated_forecast": {
+      "status": "complete",
+      "route": "/forecast",
+      "tests": ["src/domain/forecast.test.ts"],
+      "source_files": ["src/domain/forecast.ts", "components/forecast-view.tsx", "components/analysis-charts.tsx"],
+      "proof": "A 30-day holdout compares regularized regression with a 7-day mean baseline. The lower-RMSE model is selected automatically and produces a 90 percent confidence band."
+    },
+    "alerts_and_anomalies": {
+      "status": "complete",
+      "route": "/alerts",
+      "tests": ["src/domain/insights.test.ts"],
+      "source_files": ["src/domain/insights.ts", "components/alerts-view.tsx"],
+      "proof": "Each anomaly states the reading, trailing average, deviation and configured sigma threshold. Budget and run-out alerts expose editable thresholds and calculation reasons."
+    },
+    "appliance_simulator": {
+      "status": "complete",
+      "route": "/simulator",
+      "tests": ["src/domain/appliance.test.ts"],
+      "source_files": ["src/domain/appliance.ts", "components/simulator-view.tsx"],
+      "proof": "Wattage, hours, quantity and current use feed the same slab rates and daily VAT rounding. Fixed-charge evidence stays separate, and 5, 10 and 20 percent scenarios show units and money saved."
+    },
+    "safe_json_import": {
+      "status": "complete",
+      "route": "global header Load JSON control",
+      "tests": ["src/data/fixture.test.ts"],
+      "source_files": ["src/data/fixture.ts", "components/fixture-provider.tsx", "components/fixture-upload.tsx"],
+      "proof": "Validation covers calendar dates, schema, problem, comparison inputs, malformed JSON, file type and a 5 MiB pre-read limit. Invalid input preserves the active fixture."
+    }
+  },
   "verification": {
     "commands": [
       "bun run test",
@@ -81,12 +111,15 @@
       "bun run lint",
       "bun run build"
     ],
-    "latest_result": "42 tests passed; TypeScript, ESLint and the Next.js 16.3.3 production build completed successfully.",
+    "latest_result": "65 tests passed; TypeScript, ESLint and the Next.js 16.3.3 production build completed successfully.",
     "browser_routes_checked": [
       "/dashboard",
       "/ledger",
       "/advisor",
-      "/comparison"
+      "/comparison",
+      "/forecast",
+      "/alerts",
+      "/simulator"
     ]
   },
   "team_members": [
@@ -124,7 +157,7 @@
     {
       "tool": "OpenAI Codex/ChatGPT",
       "used_for": "Implementation assistance, tests, interface composition, documentation, and the disclosed mark and favicon.",
-      "how_output_was_verified": "Participant review, hand-calculated tariff cases, 42 automated tests, TypeScript, ESLint, a production build and Chromium route checks."
+      "how_output_was_verified": "Participant review, hand-calculated tariff cases, 65 automated tests, TypeScript, ESLint, a production build and Chromium route checks."
     },
     {
       "tool": "OpenCode",

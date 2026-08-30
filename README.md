@@ -25,6 +25,16 @@ Meterwise rebuilds a household meter balance one day at a time. Every recharge, 
 
 The dashboard starts with seven judge shortcuts. Each one links to the exact light month, heavy summer month, late recharge, first fixed charge, run-out answer, deposit breakdown or energy and VAT invariant.
 
+## Bonus analysis
+
+| System | Route | Test | Source |
+| --- | --- | --- | --- |
+| Evaluated 30-day demand forecast with automatic model selection and confidence band | [`/forecast`](https://lsh26-t031-p10.vercel.app/forecast) | `src/domain/forecast.test.ts` | `src/domain/forecast.ts`, `components/forecast-view.tsx` |
+| Explainable consumption anomalies and configurable budget and run-out alerts | [`/alerts`](https://lsh26-t031-p10.vercel.app/alerts) | `src/domain/insights.test.ts` | `src/domain/insights.ts`, `components/alerts-view.tsx` |
+| Slab-aware appliance cost and 5, 10 and 20 percent saving scenarios | [`/simulator`](https://lsh26-t031-p10.vercel.app/simulator) | `src/domain/appliance.test.ts` | `src/domain/appliance.ts`, `components/simulator-view.tsx` |
+
+The forecast trains a regularized linear regression on trend, weekday seasonality, lagged readings and a trailing mean. A 30-day holdout compares it with a 7-day mean baseline. The route selects the lower-RMSE result and derives its 90 percent band from holdout error. All analysis runs in TypeScript in the browser.
+
 ## Screenshots
 
 | Dashboard and judge shortcuts                                                                                         | Daily ledger and CSV export                                                                               |
@@ -49,6 +59,9 @@ flowchart LR
   C --> A[Run-out and deposit advice]
   V --> H[Three-month habit comparison]
   H --> I[Energy and VAT equality check]
+  V --> M[Forecast backtest and model selection]
+  V --> N[Anomalies and configurable alerts]
+  S --> P[Appliance and saving scenarios]
 ```
 
 The engine stores money as integer poisha. A day that crosses a slab boundary is split across each applicable slab. Recharging does not reset the monthly unit counter.
@@ -72,7 +85,7 @@ Imports are parsed in the browser and are never sent to a server.
 
 Each document needs `schema_version`, `problem_id: "P10"` and a non-empty `cases` array. Each case needs an ID, opening balance, ascending whole-unit readings, recharge history, `today`, usual daily use, target date and a comparison object naming exactly three months. Invalid files produce a visible error and do not replace the current data.
 
-The small import example demonstrates the file shape. It is not a replacement for the full six-month public fixture used for requirement proof.
+The 90-day import example demonstrates the file shape and is long enough for the 30-day forecast holdout. It is not a replacement for the full six-month public fixture used for requirement proof.
 
 ## Calculation decisions
 
@@ -108,7 +121,7 @@ bun run lint
 bun run build
 ```
 
-The suite has 42 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecasts, deposit advice, CSV output, fixture validation and strict energy and VAT equality across all 25 published cases.
+The suite has 65 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
