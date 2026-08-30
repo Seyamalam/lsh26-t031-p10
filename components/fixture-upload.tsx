@@ -36,6 +36,7 @@ export function FixtureUpload() {
           : entry
       )
     )
+    setItems([])
   }
 
   return (
