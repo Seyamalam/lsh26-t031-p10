@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
+import { AppShell } from "@/components/app-shell"
+import { FixtureProvider } from "@/components/fixture-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
@@ -17,8 +19,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable}`}>
       <body className="antialiased">
-        <ThemeProvider defaultTheme="dark" enableSystem={false}>
-          <TooltipProvider>{children}</TooltipProvider>
+        <ThemeProvider defaultTheme="system" enableSystem>
+          <TooltipProvider>
+            <FixtureProvider>
+              <AppShell>{children}</AppShell>
+            </FixtureProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

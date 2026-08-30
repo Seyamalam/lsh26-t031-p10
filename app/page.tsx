@@ -1,7 +1,5 @@
-import MeterAdvisor from "@/components/meter-advisor"
-import fixture from "@/public/data/P10_prepaid_meter_public.json"
-import type { FixtureDocument } from "@/src/domain/types"
+import { redirect } from "next/navigation"
 
-export default function Page() {
-  return <MeterAdvisor publishedFixture={fixture as FixtureDocument} />
+export default function HomePage() {
+  redirect("/dashboard")
 }
