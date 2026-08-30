@@ -9,6 +9,7 @@ import {
   type FileUploadItem,
 } from "@/components/motion/file-upload"
 import { Button } from "@/components/ui/button"
+import { settleUploadQueue } from "@/src/data/upload-queue"
 import {
   Sheet,
   SheetContent,
@@ -24,19 +25,7 @@ export function FixtureUpload() {
 
   const parseFile = async (item: FileUploadItem, file: File | undefined) => {
     const result = await loadFixture(file)
-    setItems((current) =>
-      current.map((entry) =>
-        entry.id === item.id
-          ? {
-              ...entry,
-              progress: result.ok ? 100 : 0,
-              status: result.ok ? "success" : "error",
-              error: result.error,
-            }
-          : entry
-      )
-    )
-    setItems([])
+    setItems((current) => settleUploadQueue(current, item.id, result))
   }
 
   return (

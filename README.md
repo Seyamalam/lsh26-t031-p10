@@ -121,7 +121,7 @@ bun run lint
 bun run build
 ```
 
-The suite has 65 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation and strict energy and VAT equality across all 25 published cases.
+The suite has 67 tests. It covers slab boundaries, multi-boundary allocation, monthly reset, first-recharge fixed charges, forecast backtesting, anomaly explanations, budget alerts, appliance scenarios, deposit advice, CSV output, hardened fixture validation, upload retry state and strict energy and VAT equality across all 25 published cases.
 
 ## Technology
 
