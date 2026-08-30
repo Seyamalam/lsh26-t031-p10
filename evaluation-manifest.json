@@ -16,7 +16,7 @@
   "requirements": {
     "R1": {
       "status": "complete",
-      "evidence": "/dashboard via components/dashboard-view.tsx; fixture upload in components/fixture-provider.tsx; official data in public/data/P10_prepaid_meter_public.json"
+      "evidence": "/dashboard via components/dashboard-view.tsx; beUI fixture upload in components/fixture-upload.tsx and components/fixture-provider.tsx; official data in public/data/P10_prepaid_meter_public.json"
     },
     "R2": {
       "status": "complete",
@@ -35,7 +35,7 @@
     {
       "registered_name": "Touhidul Alam Seyam",
       "github_username": "Seyamalam",
-      "major_contribution": "Sole participant: architecture, tariff and ledger engine, fixture support, automated testing, application interface, visual verification and documentation.",
+      "major_contribution": "Sole implementation owner: architecture, tariff and ledger engine, fixture support, automated testing, application interface, visual verification and documentation.",
       "evidence_paths_or_commits": [
         "src/domain",
         "src/data",
@@ -45,6 +45,12 @@
         "components/comparison-view.tsx",
         "app"
       ]
+    },
+    {
+      "registered_name": "Pratik Dev",
+      "participation_status": "Unable to participate in the build due to a severe health crisis",
+      "major_contribution": "Unable to participate in the build due to a severe health crisis",
+      "evidence_paths_or_commits": []
     }
   ],
   "major_design_decisions": [
@@ -52,7 +58,8 @@
     "Use start-of-day recharge and fixed charges before that day's consumption, matching the clarification's habit ordering.",
     "Reuse one pure tariff/ledger engine across all four requirements.",
     "Keep consumed cost separate from deposits and make energy/VAT equality an explicit tested invariant.",
-    "Provide judge-supplied JSON upload, all-case selection, and reset without a backend."
+    "Provide judge-supplied JSON upload, all-case selection, and reset without a backend.",
+    "Use the beUI file-upload block for one local JSON file with immediate validation and no server upload."
   ],
   "known_limitations": [
     "Uploaded fixture state is not persisted across page refreshes.",
@@ -63,8 +70,13 @@
   "ai_tools_used": [
     {
       "tool": "OpenAI Codex/ChatGPT",
-      "used_for": "Implementation assistance, test generation, interface composition and documentation.",
+      "used_for": "Implementation assistance, test generation, interface composition, documentation, and generation of the disclosed brand mark and favicon.",
       "how_output_was_verified": "Participant review, hand-calculated boundary tests, 39 automated tests including all 25 fixtures, TypeScript and ESLint checks, production build, and Chromium desktop/mobile visual QA."
+    },
+    {
+      "tool": "OpenCode",
+      "used_for": "Implementation and review assistance.",
+      "how_output_was_verified": "Touhidul Alam Seyam reviewed all changes and verified them with the same automated test, type, lint, build, and browser QA workflow."
     }
   ],
   "licenses_file": "LICENSES.md",

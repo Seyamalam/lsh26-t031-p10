@@ -79,7 +79,7 @@ The tariff was implemented first as small, pure domain functions, then reused un
 ## Technology
 
 - **Application:** Next.js 16 App Router, React 19, TypeScript
-- **Interface:** Tailwind CSS 4, shadcn components initialized with preset `b0`, TanStack React Table and Recharts
+- **Interface:** Tailwind CSS 4, shadcn preset `b0`, beUI file upload, TanStack React Table and Recharts
 - **Testing:** Vitest
 - **Data:** Static JSON plus client-side JSON upload; no backend or database
 - **Deployment:** Vercel at <https://lsh26-t031-p10.vercel.app>
@@ -90,18 +90,18 @@ See [`LICENSES.md`](LICENSES.md) for third-party materials.
 
 | Registered member | GitHub | Major contribution | Evidence |
 | --- | --- | --- | --- |
-| Touhidul Alam Seyam | [`Seyamalam`](https://github.com/Seyamalam) | Sole participant: architecture, tariff and ledger engine, fixture support, tests, interface, visual QA and documentation | Repository history and all source files |
+| Touhidul Alam Seyam | [`Seyamalam`](https://github.com/Seyamalam) | Sole implementation owner: architecture, tariff and ledger engine, fixture support, tests, interface, visual QA and documentation | Repository history and all source files |
+| Pratik Dev | Not provided | Unable to participate in the build due to a severe health crisis | Registered team member; no implementation contribution claimed |
 
 ## AI usage
 
-OpenAI Codex/ChatGPT assisted with implementation, test generation, interface composition and documentation. The participant verified the work by reviewing the domain rules, running the 39-test suite across all published cases, running TypeScript/ESLint/production builds, and testing desktop and mobile rendering in Chromium. AI output was not accepted as a calculation oracle; invariant and hand-calculated tests provide the evidence.
+OpenAI Codex/ChatGPT and OpenCode assisted with implementation, test generation, interface composition and documentation. OpenAI image generation produced the disclosed Meterwise brand mark and favicon. Touhidul Alam Seyam verified the work by reviewing the domain rules, running the 39-test suite across all published cases, running TypeScript/ESLint/production builds, and testing desktop and mobile rendering in Chromium. AI output was not accepted as a calculation oracle; invariant and hand-calculated tests provide the evidence.
 
 ## Known limitations
 
-- Uploaded cases and chosen filters are intentionally session-only; refreshing restores the bundled public fixture.
+- Uploaded cases, case selection and table filters are intentionally session-only; refreshing restores the bundled public fixture. Theme preference persists.
 - The calculator follows the published whole-unit schema and does not accept fractional daily units.
 - VAT rounding is explicitly performed per daily energy charge to the nearest poisha; the problem does not publish an alternative rounding interval.
-- Uploaded fixture state, case choice, table filters and theme are client-side; only the theme persists across a refresh.
 
 ## Repository records
 
