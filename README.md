@@ -6,6 +6,7 @@ Meterwise is the LSH26-T031 entry for P10, Prepaid Meter Recharge Advisor.
 - Problem: `P10`
 - Repository: <https://github.com/Seyamalam/lsh26-t031-p10>
 - Live app: <https://lsh26-t031-p10.vercel.app>
+- Combined demo video: <https://github.com/Seyamalam/lsh26-t031-p08/releases/tag/lsh26-demo>
 - Demo plan: [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md)
 
 Judges should evaluate the exact 40-character commit SHA entered in the final submission form.
@@ -159,7 +160,7 @@ See [`LICENSES.md`](LICENSES.md) for license details.
 
 ## AI use
 
-OpenAI Codex/ChatGPT and OpenCode assisted with implementation, tests, interface work and documentation. OpenAI image generation produced the disclosed Meterwise mark and favicon. Touhidul Alam Seyam reviewed the calculation rules, checked hand-calculated cases, ran the full automated suite and completed TypeScript, ESLint, production build and browser checks. AI output was not treated as a calculation oracle.
+AI assistance = OpenCode was used for implementation support. All outputs were verified with automated bun tests, browser qa, production builds in Vercel, linters and live deployment checks.
 
 ## Known limitations
 
