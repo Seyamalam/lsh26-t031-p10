@@ -2,7 +2,7 @@
   "team_id": "LSH26-T031",
   "problem_id": "P10",
   "repository_name": "lsh26-t031-p10",
-  "live_url": "",
+  "live_url": "https://lsh26-t031-p10.vercel.app",
   "demo_video_url_optional": "",
   "event_start_code": "LSH26-8490-C900",
   "repository_created_before_release": false,
@@ -16,19 +16,19 @@
   "requirements": {
     "R1": {
       "status": "complete",
-      "evidence": "Six-month signal map and monthly profile in components/meter-advisor.tsx; fixture upload in src/data/fixture.ts; official data in public/data/P10_prepaid_meter_public.json"
+      "evidence": "/dashboard via components/dashboard-view.tsx; fixture upload in components/fixture-provider.tsx; official data in public/data/P10_prepaid_meter_public.json"
     },
     "R2": {
       "status": "complete",
-      "evidence": "Balance chart and inspectable ledger in components/balance-chart.tsx and components/meter-advisor.tsx; calculation engine in src/domain/ledger.ts and src/domain/tariff.ts"
+      "evidence": "/dashboard balance chart in components/analysis-charts.tsx and /ledger table in components/ledger-table.tsx; calculation engine in src/domain/ledger.ts and src/domain/tariff.ts"
     },
     "R3": {
       "status": "complete",
-      "evidence": "Interactive forecast and target-date breakdown in components/meter-advisor.tsx backed by src/domain/advice.ts and src/domain/advice.test.ts"
+      "evidence": "/advisor via components/advisor-view.tsx backed by src/domain/advice.ts and src/domain/advice.test.ts"
     },
     "R4": {
       "status": "complete",
-      "evidence": "Cost/deposit comparison and invariant explanation in components/meter-advisor.tsx; src/domain/comparison.ts; all-case invariants in src/data/fixture.test.ts"
+      "evidence": "/comparison via components/comparison-view.tsx and components/analysis-charts.tsx; src/domain/comparison.ts; all-case invariants in src/data/fixture.test.ts"
     }
   },
   "team_members": [
@@ -39,8 +39,10 @@
       "evidence_paths_or_commits": [
         "src/domain",
         "src/data",
-        "components/meter-advisor.tsx",
-        "components/balance-chart.tsx",
+        "components/dashboard-view.tsx",
+        "components/ledger-table.tsx",
+        "components/advisor-view.tsx",
+        "components/comparison-view.tsx",
         "app"
       ]
     }
@@ -56,7 +58,7 @@
     "Uploaded fixture state is not persisted across page refreshes.",
     "The published whole-unit reading schema is enforced; fractional units are rejected.",
     "VAT is rounded per daily energy charge to the nearest poisha because no alternative rounding interval is specified.",
-    "Deployment is pending, so live_url is currently blank."
+    "Fixture selection and table state are client-side and reset on a full page refresh."
   ],
   "ai_tools_used": [
     {

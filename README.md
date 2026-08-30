@@ -2,15 +2,13 @@
 
 A solution for **LofiStack Hackathon 2026 — P10: Prepaid Meter Recharge Advisor**.
 
-![Meterwise overview](public/screenshots/meterwise-overview.png)
-
 ## Project information
 
 - **Team ID:** `LSH26-T031`
 - **Problem:** `P10 — Prepaid Meter Recharge Advisor`
 - **Repository:** <https://github.com/Seyamalam/lsh26-t031-p10>
-- **Live application:** Pending deployment; the production build is verified locally
-- **Demo video:** Not supplied
+- **Live application:** <https://lsh26-t031-p10.vercel.app>
+- **60-second demo plan:** [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md)
 
 > Judges should evaluate only the exact 40-character commit SHA entered in the Final Submission Form.
 
@@ -22,20 +20,18 @@ Meterwise reconstructs a household's prepaid meter balance one day at a time, ke
 
 | Requirement | Status | Where to verify |
 | --- | --- | --- |
-| R1 — At least six months of readings and recharge history, including light/heavy/late-recharge months | Complete | Open the app, change the fixture case, then inspect **Six-month signal map** and **Monthly consumption profile**. `public/data/P10_prepaid_meter_public.json` contains all 25 published cases. |
-| R2 — Rebuild balance daily with progressive slabs, first-recharge fixed charges, VAT, chart and markers | Complete | **Balance trace** contains the chart and every daily ledger row. Inspect a slab-crossing or amber recharge row. Pure engine: `src/domain/ledger.ts`; tests: `src/domain/ledger.test.ts` and `src/domain/tariff.test.ts`. |
-| R3 — Forecast run-out and calculate the recharge required through a target date with breakdown | Complete | **How long—and how much?** Change **Last through** and inspect the reconciled baseline energy, higher-slab increment, VAT, fixed charges, balance offset and advised deposit. Pure engine/tests: `src/domain/advice.ts` and `src/domain/advice.test.ts`. |
-| R4 — Compare low-balance and monthly habits on identical consumption | Complete | **Same units. Same energy cost.** The invariant badge confirms identical energy and VAT. Switch to **Deposits & balance** to see cash added separately from cost. Engine: `src/domain/comparison.ts`; all 25 cases are checked in `src/data/fixture.test.ts`. |
+| R1 — At least six months of readings and recharge history, including light/heavy/late-recharge months | Complete | `/dashboard` shows monthly consumption plus the light, heavy and late-recharge checks. `public/data/P10_prepaid_meter_public.json` contains all 25 published cases. |
+| R2 — Rebuild balance daily with progressive slabs, first-recharge fixed charges, VAT, chart and markers | Complete | `/dashboard` contains the balance chart and recharge markers; `/ledger` provides searchable, sortable, paginated daily values. Pure engine: `src/domain/ledger.ts`; tests: `src/domain/ledger.test.ts` and `src/domain/tariff.test.ts`. |
+| R3 — Forecast run-out and calculate the recharge required through a target date with breakdown | Complete | `/advisor` shows the run-out date and reconciled baseline energy, higher-slab increment, VAT, fixed charges, balance credit and required deposit. Engine/tests: `src/domain/advice.ts` and `src/domain/advice.test.ts`. |
+| R4 — Compare low-balance and monthly habits on identical consumption | Complete | `/comparison` shows both policies, component costs, deposits, balances and the strict energy/VAT invariant. Engine: `src/domain/comparison.ts`; all 25 cases are checked in `src/data/fixture.test.ts`. |
 
 ## Judge walkthrough
 
-1. Open the application. It starts on published case `PUB-01`.
-2. Select another of the 25 cases from **Fixture case**. Every analysis updates from the same engine.
-3. Use **Load JSON** to upload `public/data/P10_prepaid_meter_public.json`, or another P10 JSON document in the published schema. Invalid input shows a readable rejection message.
-4. Use **Reset sample** to restore all 25 bundled public cases and `PUB-01`.
-5. In **Balance trace**, locate an amber recharge marker and match it to the ledger's recharge and fixed-charge columns. Filter the ledger by month if useful.
-6. Change **Last through** to recalculate the target-date recharge advice.
-7. In the comparison, confirm the two energy and VAT values match exactly, then switch tabs to separate deposits from meter-consumed cost.
+1. Open `/dashboard`, change the selected case, and verify that the metrics, balance chart, monthly chart and history checks update together.
+2. Open `/ledger`, filter by a date, sort a value column and inspect a teal recharge row with its fixed charge.
+3. Open `/advisor`, change **Last through**, and reconcile the required deposit against the visible breakdown.
+4. Open `/comparison` and confirm the invariant states that energy and VAT match exactly; compare consumed cost separately from deposits.
+5. Use **Load JSON** to upload `public/data/P10_prepaid_meter_public.json`. Use reset to restore all published cases. Invalid input produces a visible error.
 
 ## Calculation decisions
 
@@ -83,10 +79,10 @@ The tariff was implemented first as small, pure domain functions, then reused un
 ## Technology
 
 - **Application:** Next.js 16 App Router, React 19, TypeScript
-- **Interface:** Tailwind CSS 4 and shadcn components initialized with preset `b0`
+- **Interface:** Tailwind CSS 4, shadcn components initialized with preset `b0`, TanStack React Table and Recharts
 - **Testing:** Vitest
 - **Data:** Static JSON plus client-side JSON upload; no backend or database
-- **Deployment:** Not deployed yet
+- **Deployment:** Vercel at <https://lsh26-t031-p10.vercel.app>
 
 See [`LICENSES.md`](LICENSES.md) for third-party materials.
 
@@ -105,10 +101,11 @@ OpenAI Codex/ChatGPT assisted with implementation, test generation, interface co
 - Uploaded cases and chosen filters are intentionally session-only; refreshing restores the bundled public fixture.
 - The calculator follows the published whole-unit schema and does not accept fractional daily units.
 - VAT rounding is explicitly performed per daily energy charge to the nearest poisha; the problem does not publish an alternative rounding interval.
-- There is no live URL until deployment is completed and recorded in this README and `evaluation-manifest.json`.
+- Uploaded fixture state, case choice, table filters and theme are client-side; only the theme persists across a refresh.
 
 ## Repository records
 
 - [`EVENT.md`](EVENT.md) — event code and empty pre-event-material declaration
 - [`evaluation-manifest.json`](evaluation-manifest.json) — structured judging evidence
 - [`LICENSES.md`](LICENSES.md) — third-party material and AI disclosure
+- [`DEMO-60-SECONDS.md`](DEMO-60-SECONDS.md) — exactly one-minute recording script and checklist
