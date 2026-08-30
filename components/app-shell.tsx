@@ -8,6 +8,7 @@ import {
   BellRing,
   Calculator,
   ChartNoAxesCombined,
+  Database,
   LayoutDashboard,
   PlugZap,
   RefreshCcw,
@@ -22,7 +23,9 @@ import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -50,6 +53,7 @@ const navigation = [
   { href: "/forecast", label: "Demand forecast", icon: ChartNoAxesCombined },
   { href: "/alerts", label: "Alerts", icon: BellRing },
   { href: "/simulator", label: "Appliance simulator", icon: PlugZap },
+  { href: "/datasets", label: "Datasets", icon: Database },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -60,6 +64,7 @@ const pageTitles: Record<string, string> = {
   "/forecast": "Demand forecast",
   "/alerts": "Alerts",
   "/simulator": "Appliance simulator",
+  "/datasets": "Datasets",
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -68,9 +73,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     fixture,
     fixtureRevision,
     caseId,
+    datasetId,
+    datasetName,
+    datasetKind,
+    savedDatasets,
+    selectDataset,
     selectCase,
     resetFixture,
     uploadError,
+    workspaceError,
     clearUploadError,
   } = useFixture()
 
@@ -133,6 +144,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {pageTitles[pathname] ?? "Meterwise"}
           </span>
           <div className="hidden items-center gap-2 sm:flex">
+            <DatasetSelect
+              datasetId={datasetId}
+              datasetName={datasetName}
+              datasetKind={datasetKind}
+              savedDatasets={savedDatasets}
+              selectDataset={selectDataset}
+            />
             <Select value={caseId} onValueChange={selectCase}>
               <SelectTrigger
                 size="sm"
@@ -164,6 +182,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <div className="flex items-center gap-2 border-b px-3 py-2 sm:hidden">
+          <DatasetSelect
+            datasetId={datasetId}
+            datasetName={datasetName}
+            datasetKind={datasetKind}
+            savedDatasets={savedDatasets}
+            selectDataset={selectDataset}
+            compact
+          />
           <Select value={caseId} onValueChange={selectCase}>
             <SelectTrigger
               size="sm"
@@ -204,6 +230,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
+        {workspaceError && !uploadError && (
+          <div className="px-3 pt-3 sm:px-5">
+            <Alert variant="destructive">
+              <AlertTitle>Device workspace unavailable</AlertTitle>
+              <AlertDescription>{workspaceError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         <main
           key={fixtureRevision}
           id="main-content"
@@ -213,5 +248,57 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </SidebarInset>
     </SidebarProvider>
+  )
+}
+
+function DatasetSelect({
+  datasetId,
+  datasetName,
+  datasetKind,
+  savedDatasets,
+  selectDataset,
+  compact = false,
+}: {
+  datasetId: string
+  datasetName: string
+  datasetKind: "bundled" | "saved" | "temporary"
+  savedDatasets: { id: string; name: string }[]
+  selectDataset: (id: string | null) => Promise<void>
+  compact?: boolean
+}) {
+  return (
+    <Select
+      value={datasetId}
+      onValueChange={(value) => void selectDataset(value)}
+    >
+      <SelectTrigger
+        size="sm"
+        className={compact ? "min-w-0 flex-1" : "w-44"}
+        aria-label="Dataset"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Bundled / session</SelectLabel>
+          <SelectItem value="bundled:p10-public">
+            Bundled public fixture
+          </SelectItem>
+          {datasetKind === "temporary" && (
+            <SelectItem value={datasetId}>{datasetName}</SelectItem>
+          )}
+        </SelectGroup>
+        {savedDatasets.length > 0 && (
+          <SelectGroup>
+            <SelectLabel>Saved on this device</SelectLabel>
+            {savedDatasets.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        )}
+      </SelectContent>
+    </Select>
   )
 }

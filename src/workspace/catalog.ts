@@ -167,7 +167,21 @@ export class WorkspaceCatalog {
     )) as DatasetRecord[]
     return records
       .sort((a, b) => b.importedAt.localeCompare(a.importedAt))
-      .map(({ rawJson: _raw, fixture: _fixture, ...summary }) => summary)
+      .map((record) => ({
+        id: record.id,
+        name: record.name,
+        problemId: record.problemId,
+        schemaVersion: record.schemaVersion,
+        sourceFilename: record.sourceFilename,
+        importedAt: record.importedAt,
+        byteSize: record.byteSize,
+        fingerprint: record.fingerprint,
+        caseCount: record.caseCount,
+        earliestDate: record.earliestDate,
+        latestDate: record.latestDate,
+        totalReadings: record.totalReadings,
+        lastOpenedCase: record.lastOpenedCase,
+      }))
   }
 
   async getDataset(id: string): Promise<DatasetRecord | undefined> {

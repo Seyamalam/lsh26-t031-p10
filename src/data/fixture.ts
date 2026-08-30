@@ -257,6 +257,12 @@ export function parseFixtureJson(source: string): FixtureDocument {
 export async function parseFixtureFile(
   file: FixtureFile
 ): Promise<FixtureDocument> {
+  return (await readFixtureUpload(file)).fixture
+}
+
+export async function readFixtureUpload(
+  file: FixtureFile
+): Promise<{ rawJson: string; fixture: FixtureDocument; usedWorker: boolean }> {
   if (file.size > MAX_FIXTURE_BYTES)
     throw new Error("Fixture JSON must be 5 MiB or smaller.")
   const extensionIsJson = file.name?.toLowerCase().endsWith(".json") ?? false
@@ -265,7 +271,10 @@ export async function parseFixtureFile(
     throw new Error(
       "Choose a JSON fixture file. ZIP and other formats are not accepted."
     )
-  return parseFixtureJson(await file.text())
+  const rawJson = await file.text()
+  const { parseFixtureAccelerated } = await import("../workspace/workers")
+  const parsed = await parseFixtureAccelerated(rawJson, file.size)
+  return { rawJson, ...parsed }
 }
 
 export async function loadPublishedFixture(): Promise<FixtureDocument> {

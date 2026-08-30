@@ -1,9 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { PlugZap } from "lucide-react"
 
-import { useFixture } from "@/components/fixture-provider"
+import {
+  useFixture,
+  usePersistedControlState,
+} from "@/components/fixture-provider"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -20,13 +23,8 @@ import { addDays } from "@/src/domain/dates"
 import { formatBdt } from "@/src/domain/money"
 
 export function SimulatorView() {
-  const { caseId } = useFixture()
-  return <SimulatorPanel key={caseId} />
-}
-
-function SimulatorPanel() {
   const { activeCase, last } = useFixture()
-  const [form, setForm] = useState({
+  const [form, setForm] = usePersistedControlState("simulator", {
     wattage: 1200,
     hours: 3,
     quantity: 1,

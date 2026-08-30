@@ -23,6 +23,7 @@ import {
 import { prettyMonth } from "@/src/domain/dates"
 import type { CostTotals, DailyLedgerRow } from "@/src/domain/types"
 import type { ForecastPoint } from "@/src/domain/forecast"
+import { balanceTooltipItems } from "@/src/workspace/tooltip"
 
 const forecastConfig = {
   predictedUnits: { label: "Forecast", color: "var(--chart-1)" },
@@ -85,6 +86,8 @@ export function BalanceHistoryChart({ rows }: { rows: DailyLedgerRow[] }) {
     date: row.date,
     balance: row.closingBalancePoisha / 100,
     recharge: row.rechargePoisha / 100,
+    markerBalance:
+      row.rechargePoisha > 0 ? row.closingBalancePoisha / 100 : undefined,
   }))
   const rechargeData = data.filter((item) => item.recharge > 0)
   return (
@@ -116,27 +119,10 @@ export function BalanceHistoryChart({ rows }: { rows: DailyLedgerRow[] }) {
           stroke="var(--destructive)"
           strokeDasharray="4 4"
         />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              formatter={(value) => (
-                <div className="flex w-full items-center justify-between gap-4">
-                  <span className="text-muted-foreground">Balance</span>
-                  <span className="font-mono font-medium">
-                    ৳
-                    {Number(value).toLocaleString("en-BD", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
-            />
-          }
-        />
+        <ChartTooltip content={<BalanceTooltip />} />
         <Line
           type="monotone"
-          dataKey="balance"
+          dataKey="markerBalance"
           stroke="var(--color-balance)"
           strokeWidth={2}
           dot={false}
@@ -149,6 +135,46 @@ export function BalanceHistoryChart({ rows }: { rows: DailyLedgerRow[] }) {
         />
       </LineChart>
     </ChartContainer>
+  )
+}
+
+function BalanceTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean
+  payload?: {
+    dataKey?: string | number
+    value?: unknown
+    payload?: Record<string, unknown>
+  }[]
+  label?: string
+}) {
+  if (!active || !payload?.length) return null
+  const items = balanceTooltipItems(payload)
+  if (!items.length) return null
+  return (
+    <div className="min-w-40 rounded-lg bg-popover p-2.5 text-xs shadow-md ring-1 ring-foreground/10">
+      <p className="mb-2 font-mono text-[10px] text-muted-foreground">
+        {label}
+      </p>
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="flex items-center justify-between gap-5 py-0.5"
+        >
+          <span className="text-muted-foreground">{item.label}</span>
+          <span className="font-mono font-medium">
+            ৳
+            {item.value.toLocaleString("en-BD", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>
+      ))}
+    </div>
   )
 }
 

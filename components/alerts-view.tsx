@@ -1,9 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { AlertTriangle, CheckCircle2 } from "lucide-react"
 
-import { useFixture } from "@/components/fixture-provider"
+import {
+  useFixture,
+  usePersistedControlState,
+} from "@/components/fixture-provider"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -22,16 +25,16 @@ import {
 import { formatBdt } from "@/src/domain/money"
 
 export function AlertsView() {
-  const { caseId } = useFixture()
-  return <AlertsPanel key={caseId} />
-}
-
-function AlertsPanel() {
   const { activeCase, ledger, runOut } = useFixture()
-  const [budgetBdt, setBudgetBdt] = useState(3000)
-  const [budgetWarning, setBudgetWarning] = useState(80)
-  const [runOutWarning, setRunOutWarning] = useState(7)
-  const [sensitivity, setSensitivity] = useState(2.5)
+  const [settings, setSettings] = usePersistedControlState("alerts", {
+    budgetBdt: 3000,
+    budgetWarning: 80,
+    runOutWarning: 7,
+    sensitivity: 2.5,
+  })
+  const { budgetBdt, budgetWarning, runOutWarning, sensitivity } = settings
+  const set = (field: keyof typeof settings, value: number) =>
+    setSettings((current) => ({ ...current, [field]: value }))
   const currentMonth = activeCase.today.slice(0, 7)
   const currentMonthCost = ledger
     .filter((row) => row.date.startsWith(currentMonth))
@@ -80,7 +83,7 @@ function AlertsPanel() {
             label="Monthly budget (BDT)"
             value={budgetBdt}
             min={1}
-            onChange={setBudgetBdt}
+            onChange={(value) => set("budgetBdt", value)}
           />
           <Field
             id="budget-warning"
@@ -88,14 +91,14 @@ function AlertsPanel() {
             value={budgetWarning}
             min={1}
             max={100}
-            onChange={setBudgetWarning}
+            onChange={(value) => set("budgetWarning", value)}
           />
           <Field
             id="runout-warning"
             label="Run-out warning (days)"
             value={runOutWarning}
             min={1}
-            onChange={setRunOutWarning}
+            onChange={(value) => set("runOutWarning", value)}
           />
           <Field
             id="anomaly-threshold"
@@ -103,7 +106,7 @@ function AlertsPanel() {
             value={sensitivity}
             min={1}
             step={0.1}
-            onChange={setSensitivity}
+            onChange={(value) => set("sensitivity", value)}
           />
         </CardContent>
       </Card>

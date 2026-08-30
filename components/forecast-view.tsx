@@ -1,11 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
 import { CheckCircle2 } from "lucide-react"
 
 import { ForecastChart } from "@/components/analysis-charts"
 import { useFixture } from "@/components/fixture-provider"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -13,14 +13,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { forecastConsumption } from "@/src/domain/forecast"
 
 export function ForecastView() {
-  const { activeCase } = useFixture()
-  const forecast = useMemo(
-    () => forecastConsumption(activeCase.days, 30),
-    [activeCase]
-  )
+  const { activeCase, forecast, forecastLoading, forecastWorkerUsed } =
+    useFixture()
+  if (!forecast)
+    return (
+      <div className="space-y-4" aria-busy={forecastLoading}>
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-[360px] w-full" />
+      </div>
+    )
   const { evaluation } = forecast
   return (
     <div className="space-y-4">
@@ -34,7 +37,7 @@ export function ForecastView() {
           </p>
         </div>
         <Badge variant="outline" className="ml-auto font-mono text-[10px]">
-          {activeCase.case_id}
+          {activeCase.case_id} · {forecastWorkerUsed ? "worker" : "sync"}
         </Badge>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
